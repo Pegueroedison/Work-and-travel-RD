@@ -243,15 +243,39 @@
     "Guinea Ecuatorial"
   ];
 
-  function normalizeProfileCountry(value = "") {
+  let profileCountryCache = [...PROFILE_SPANISH_COUNTRIES];
+
+  function normalizeProfileCountry(value = "", allowedCountries = profileCountryCache) {
     const raw = String(value || "").normalize("NFC").replace(/\s+/g, " ").trim();
     if (!raw) return "";
-    const found = PROFILE_SPANISH_COUNTRIES.find(country => country.toLowerCase() === raw.toLowerCase());
+    const list = Array.isArray(allowedCountries) && allowedCountries.length ? allowedCountries : PROFILE_SPANISH_COUNTRIES;
+    const found = list.find(country => String(country || "").toLowerCase() === raw.toLowerCase());
     return found || "";
   }
 
-  function profileCountryOptionsHTML() {
-    return PROFILE_SPANISH_COUNTRIES.map(country => `<option value="${WT.escapeHTML(country)}"></option>`).join("");
+  async function loadProfileCountries() {
+    if (!WT.supabase) return profileCountryCache;
+    try {
+      const { data, error } = await WT.supabase
+        .from("profile_countries")
+        .select("name")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+      if (error) throw error;
+      const countries = (data || []).map(row => String(row?.name || "").trim()).filter(Boolean);
+      if (countries.length) profileCountryCache = countries;
+    } catch (error) {
+      console.warn("No se pudo cargar la lista de países desde Supabase. Usando lista local.", error);
+    }
+    return profileCountryCache;
+  }
+
+  function countryMatchesSearch(country, query = "") {
+    const q = String(query || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    if (!q) return true;
+    const name = String(country || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    return name.includes(q);
   }
 
   function normalizeFullNameText(value = "") {
@@ -1681,6 +1705,8 @@
     profile = await WT.getMyProfile();
     const accountStatus = await fetchAccountStatus();
     const prefs = readPreferences();
+    const countryOptions = await loadProfileCountries();
+    const currentCountry = normalizeProfileCountry(profile?.country || "", countryOptions);
     const displayName = profile?.full_name || sessionUser?.email || "Usuario";
     const currentUsername = normalizeUsernameText(profile?.username || usernameCandidateFrom({ name: displayName, email: profile?.email || sessionUser?.email, id: profile?.id || sessionUser?.id }));
     const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase()).join("") || "U";
@@ -1726,7 +1752,7 @@
             <label class="settings-field"><span>Ciudad</span><input class="input" name="city" value="${WT.escapeHTML(profile?.city || "")}" placeholder="Ej: Mao"></label>
             <label class="settings-field"><span>Año del programa</span><input class="input" name="program_year" value="${WT.escapeHTML(profile?.program_year || "")}" placeholder="Ej: 2026"></label>
           </div>
-          <label class="settings-field country-select-field"><span>País</span><input class="input" name="country" id="profileCountryInput" list="profileCountryList" value="${WT.escapeHTML(normalizeProfileCountry(profile?.country || ""))}" placeholder="Buscar o seleccionar país" autocomplete="off"><datalist id="profileCountryList">${profileCountryOptionsHTML()}</datalist><small>Selecciona un país de habla hispana.</small></label>
+          <label class="settings-field country-select-field"><span>País</span><div class="profile-country-combobox" id="profileCountryCombobox"><input class="input" name="country" id="profileCountryInput" value="${WT.escapeHTML(currentCountry)}" placeholder="Selecciona tu país" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="profileCountryOptions"><button class="profile-country-toggle" type="button" id="profileCountryToggle" aria-label="Ver países">⌄</button><div class="profile-country-options" id="profileCountryOptions" hidden></div></div><small>Selecciona tu país.</small></label>
           <label class="settings-field"><span>Sponsor</span><input class="input" name="sponsor" value="${WT.escapeHTML(profile?.sponsor || "")}" placeholder="Ej: Greenheart"></label>
         </div>
       </section>
@@ -1781,6 +1807,8 @@
     const usernamePreview = WT.qs("#profileUsernamePreview", modal.element);
     const fullNameInput = WT.qs("#profileFullNameInput", modal.element);
     const countryInput = WT.qs("#profileCountryInput", modal.element);
+    const countryToggle = WT.qs("#profileCountryToggle", modal.element);
+    const countryOptionsBox = WT.qs("#profileCountryOptions", modal.element);
     let usernameCheckTimer = null;
     let lastUsernameAvailability = null;
 
@@ -1825,14 +1853,52 @@
       fullNameInput.value = normalizeFullNameText(fullNameInput.value).trim();
     });
 
-    countryInput?.addEventListener("blur", () => {
-      const normalizedCountry = normalizeProfileCountry(countryInput.value);
-      if (countryInput.value.trim() && !normalizedCountry) {
-        countryInput.value = "";
-        WT.toast("Selecciona un país válido de la lista.", "warning");
-        return;
+    function renderCountryOptions(query = "") {
+      if (!countryOptionsBox || !countryInput) return;
+      const matches = countryOptions.filter(country => countryMatchesSearch(country, query)).slice(0, 12);
+      countryOptionsBox.innerHTML = matches.length
+        ? matches.map(country => `<button type="button" class="profile-country-option" data-country="${WT.escapeHTML(country)}">${WT.escapeHTML(country)}</button>`).join("")
+        : `<div class="profile-country-empty">No aparece ese país.</div>`;
+      countryOptionsBox.hidden = false;
+      countryInput.setAttribute("aria-expanded", "true");
+    }
+
+    function hideCountryOptions() {
+      if (!countryOptionsBox || !countryInput) return;
+      countryOptionsBox.hidden = true;
+      countryInput.setAttribute("aria-expanded", "false");
+    }
+
+    countryInput?.addEventListener("focus", () => renderCountryOptions(countryInput.value));
+    countryInput?.addEventListener("input", () => renderCountryOptions(countryInput.value));
+    countryToggle?.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (countryOptionsBox?.hidden) {
+        countryInput?.focus();
+        renderCountryOptions(countryInput?.value || "");
+      } else {
+        hideCountryOptions();
       }
-      countryInput.value = normalizedCountry;
+    });
+    countryOptionsBox?.addEventListener("mousedown", (event) => {
+      const option = event.target.closest("[data-country]");
+      if (!option || !countryInput) return;
+      event.preventDefault();
+      countryInput.value = option.dataset.country || "";
+      hideCountryOptions();
+    });
+    countryInput?.addEventListener("blur", () => {
+      setTimeout(() => {
+        const normalizedCountry = normalizeProfileCountry(countryInput.value, countryOptions);
+        if (countryInput.value.trim() && !normalizedCountry) {
+          countryInput.value = "";
+          WT.toast("Selecciona un país válido de la lista.", "warning");
+          hideCountryOptions();
+          return;
+        }
+        countryInput.value = normalizedCountry;
+        hideCountryOptions();
+      }, 140);
     });
 
     if (forumDarkToggle) forumDarkToggle.checked = prefs.forum_dark_mode === true || prefs.forum_dark_mode === "true";
@@ -2029,12 +2095,17 @@
       }
       if (fullNameInput) fullNameInput.value = fullNameCheck.fullName;
 
+      const selectedCountry = normalizeProfileCountry(fd.get("country") || "", countryOptions);
+      if (String(fd.get("country") || "").trim() && !selectedCountry) {
+        return WT.toast("Selecciona un país válido de la lista.", "error", "País inválido");
+      }
+
       const updates = {
         username: usernameCheck.username,
         full_name: fullNameCheck.fullName,
         bio: String(fd.get("bio") || "").trim(),
         city: String(fd.get("city") || "").trim(),
-        country: normalizeProfileCountry(fd.get("country") || ""),
+        country: selectedCountry,
         program_year: String(fd.get("program_year") || "").trim(),
         sponsor: String(fd.get("sponsor") || "").trim()
       };
