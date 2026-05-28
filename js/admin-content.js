@@ -63,8 +63,10 @@
   }
 
   async function adminQuery(action) {
-    if (WT.ensureSessionFresh) await WT.ensureSessionFresh({ force: true });
+    // V4047: no forzar refresh antes de cada guardado. Eso podía dejar el botón esperando.
+    // runWithSession despierta la sesión en silencio y solo refresca si realmente falla por auth/JWT.
     if (WT.runWithSession) return WT.runWithSession(action);
+    try { await WT.wakeSupabaseSession?.({ reason: "admin-action" }); } catch (_) {}
     return action();
   }
 

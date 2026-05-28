@@ -28,6 +28,13 @@
     );
   }
 
+  function withTimeout(promise, ms = 7000, label = "operación") {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} tardó demasiado`)), ms))
+    ]);
+  }
+
   function startSupabaseAutoRefresh() {
     if (!client?.auth?.startAutoRefresh) return;
     const now = Date.now();
@@ -55,7 +62,7 @@
     sessionRefreshPromise = (async () => {
       try {
         lastSessionCheck = Date.now();
-        const { data, error } = await client.auth.getSession();
+        const { data, error } = await withTimeout(client.auth.getSession(), 6500, "getSession");
         if (error) throw error;
 
         const session = data?.session || null;
@@ -63,7 +70,7 @@
         const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 5 * 60 * 1000);
 
         if (session && (force || nearExpiry)) {
-          const refreshed = await client.auth.refreshSession();
+          const refreshed = await withTimeout(client.auth.refreshSession(), 6500, "refreshSession");
           if (refreshed?.error) throw refreshed.error;
           return refreshed?.data?.session || session;
         }
@@ -89,17 +96,18 @@
   }
 
   async function runWithSession(action, { retry = true } = {}) {
-    await wakeSupabaseSession({ reason: "action" });
+    // No bloquea los botones si el navegador/Supabase tarda en despertar.
+    try { await withTimeout(wakeSupabaseSession({ reason: "action" }), 6500, "despertar sesión"); } catch (_) {}
     try {
       const result = await action();
       if (result?.error && retry && authErrorLooksExpired(result.error)) {
-        await ensureSessionFresh({ force: true });
+        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
         return action();
       }
       return result;
     } catch (error) {
       if (retry && authErrorLooksExpired(error)) {
-        await ensureSessionFresh({ force: true });
+        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
         return action();
       }
       throw error;
