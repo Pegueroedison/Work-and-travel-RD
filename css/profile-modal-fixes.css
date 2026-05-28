@@ -847,7 +847,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .btn-primary,
 }
 
 /* ==========================================================
-   V4038 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
+   V4039 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
    El modal publico NO queda oscuro por defecto: solo se oscurece
    cuando el foro esta en modo oscuro (.wt-forum-dark).
    ========================================================== */
@@ -992,4 +992,117 @@ html.wt-forum-dark .modal-card.wt-profile-final-modal .modal-close {
   background: #f8fbff !important;
   color: #0b2f6b !important;
   border-color: rgba(148,163,184,.20) !important;
+}
+
+/* ==========================================================
+   V4039 - Perfil público: scroll real, cerrar visible y layout estable
+   ========================================================== */
+body .modal-backdrop .modal-card.public-profile-modal,
+body .modal-backdrop .modal-card.wt-profile-final-modal,
+.modal-card.public-profile-modal,
+.modal-card.wt-profile-final-modal {
+  max-height: calc(100dvh - 44px) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .modal-head,
+body .modal-backdrop .modal-card.wt-profile-final-modal .modal-head,
+.modal-card.public-profile-modal .modal-head,
+.modal-card.wt-profile-final-modal .modal-head {
+  flex: 0 0 auto !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .modal-body,
+body .modal-backdrop .modal-card.wt-profile-final-modal .modal-body,
+.modal-card.public-profile-modal .modal-body,
+.modal-card.wt-profile-final-modal .modal-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  padding-bottom: 18px !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .modal-actions,
+body .modal-backdrop .modal-card.wt-profile-final-modal .modal-actions,
+.modal-card.public-profile-modal .modal-actions,
+.modal-card.wt-profile-final-modal .modal-actions {
+  flex: 0 0 auto !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  padding: 12px 28px calc(22px + env(safe-area-inset-bottom)) !important;
+  background: inherit !important;
+  border-top: 0 !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-title-row,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-title-row,
+.modal-card.public-profile-modal .public-profile-title-row,
+.modal-card.wt-profile-final-modal .public-profile-title-row {
+  align-items: flex-start !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-title-row h3,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-title-row h3,
+.modal-card.public-profile-modal .public-profile-title-row h3,
+.modal-card.wt-profile-final-modal .public-profile-title-row h3 {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Si hay botón de amistad, que no rompa el texto; si es el propio perfil no se renderiza. */
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-box,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-box,
+.modal-card.public-profile-modal .public-profile-friend-box,
+.modal-card.wt-profile-final-modal .public-profile-friend-box {
+  align-self: flex-start !important;
+  margin-top: 0 !important;
+}
+
+@media (max-width: 520px) {
+  body .modal-backdrop .modal-card.public-profile-modal,
+  body .modal-backdrop .modal-card.wt-profile-final-modal,
+  .modal-card.public-profile-modal,
+  .modal-card.wt-profile-final-modal {
+    max-height: calc(100dvh - 38px) !important;
+  }
+
+  body .modal-backdrop .modal-card.public-profile-modal .modal-head,
+  body .modal-backdrop .modal-card.wt-profile-final-modal .modal-head,
+  .modal-card.public-profile-modal .modal-head,
+  .modal-card.wt-profile-final-modal .modal-head {
+    min-height: 92px !important;
+  }
+
+  body .modal-backdrop .modal-card.public-profile-modal .modal-body,
+  body .modal-backdrop .modal-card.wt-profile-final-modal .modal-body,
+  .modal-card.public-profile-modal .modal-body,
+  .modal-card.wt-profile-final-modal .modal-body {
+    padding: 22px !important;
+    padding-bottom: 16px !important;
+  }
+
+  body .modal-backdrop .modal-card.public-profile-modal .modal-actions,
+  body .modal-backdrop .modal-card.wt-profile-final-modal .modal-actions,
+  .modal-card.public-profile-modal .modal-actions,
+  .modal-card.wt-profile-final-modal .modal-actions {
+    padding: 10px 22px calc(20px + env(safe-area-inset-bottom)) !important;
+  }
+
+  body .modal-backdrop .modal-card.public-profile-modal .btn-primary,
+  body .modal-backdrop .modal-card.wt-profile-final-modal .btn-primary,
+  .modal-card.public-profile-modal .btn-primary,
+  .modal-card.wt-profile-final-modal .btn-primary {
+    min-height: 58px !important;
+    border-radius: 20px !important;
+  }
+}
+
+/* Mi perfil: límite visual del nombre completo. */
+.profile-settings-modal input[name="full_name"] {
+  text-transform: none !important;
 }

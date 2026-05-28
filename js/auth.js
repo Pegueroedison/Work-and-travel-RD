@@ -218,6 +218,29 @@
   ];
 
   const USERNAME_MAX_LENGTH = 16;
+  const FULL_NAME_MAX_LENGTH = 22;
+
+  function normalizeFullNameText(value = "") {
+    const cleaned = String(value || "")
+      .normalize("NFC")
+      .replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]/g, "")
+      .replace(/\s+/g, " ")
+      .trimStart();
+    const parts = cleaned.trim().split(" ").filter(Boolean).slice(0, 2);
+    let normalized = parts.join(" ");
+    if (normalized.length > FULL_NAME_MAX_LENGTH) normalized = normalized.slice(0, FULL_NAME_MAX_LENGTH).trimEnd();
+    return normalized;
+  }
+
+  function validateFullName(value = "") {
+    const normalized = normalizeFullNameText(value).trim();
+    const parts = normalized.split(" ").filter(Boolean);
+    if (!normalized) return { ok: false, fullName: normalized, message: "Escribe tu nombre y apellido." };
+    if (normalized.length > FULL_NAME_MAX_LENGTH) return { ok: false, fullName: normalized, message: `El nombre no puede pasar de ${FULL_NAME_MAX_LENGTH} caracteres.` };
+    if (parts.length !== 2) return { ok: false, fullName: normalized, message: "Escribe solo nombre y apellido, separados por un espacio." };
+    if (parts.some(part => part.length < 2)) return { ok: false, fullName: normalized, message: "El nombre y el apellido deben tener al menos 2 letras." };
+    return { ok: true, fullName: normalized, message: "Nombre válido." };
+  }
 
   function normalizeUsernameText(value = "") {
     return String(value || "")
@@ -885,7 +908,7 @@
       <div class="auth-divider"><span>o usa tu correo</span></div>
     </div>
     <form class="form-grid auth-modern-form" id="authForm">
-      ${!isLogin ? `<label>Nombre completo<input class="input" name="full_name" required placeholder="Tu nombre"></label>` : ""}
+      ${!isLogin ? `<label>Nombre completo<input class="input" name="full_name" required placeholder="Nombre Apellido" maxlength="22" inputmode="text" autocomplete="name"><small class="form-help">Máximo 22 caracteres y solo un espacio.</small></label>` : ""}
       <label>Correo<input class="input" type="email" name="email" required placeholder="correo@ejemplo.com"></label>
       <label>Contraseña<input class="input" type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres"></label>
       <button class="btn btn-primary auth-submit" type="submit">${isLogin ? "Iniciar sesión" : "Crear cuenta"}</button>
@@ -913,10 +936,22 @@
   function showRegisterModal() {
     const modal = WT.showModal({ title: "Crear cuenta", body: authFormHTML("register"), className: "auth-liquid-modal register-liquid-modal" });
     const form = WT.qs("#authForm", modal.element);
+    const fullNameInput = form?.elements?.full_name;
+    fullNameInput?.addEventListener("input", () => {
+      const clean = normalizeFullNameText(fullNameInput.value);
+      if (fullNameInput.value !== clean) fullNameInput.value = clean;
+    });
+    fullNameInput?.addEventListener("blur", () => {
+      fullNameInput.value = normalizeFullNameText(fullNameInput.value).trim();
+    });
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!WT.canConnect) return WT.toast("La conexión de la plataforma no está configurada.", "error");
       const fd = new FormData(form);
+      const nameCheck = validateFullName(fd.get("full_name") || "");
+      if (!nameCheck.ok) return WT.toast(nameCheck.message, "error", "Nombre inválido");
+      if (fullNameInput) fullNameInput.value = nameCheck.fullName;
+      fd.set("full_name", nameCheck.fullName);
       const redirectTo = `${appBaseUrl()}index.html?type=signup`;
       const { data, error } = await WT.supabase.auth.signUp({
         email: fd.get("email"),
@@ -1656,7 +1691,7 @@
         <h4>Perfil público</h4>
         <div class="settings-list settings-edit-list">
           <label class="settings-field username-field"><span>@usuario</span><div class="username-input-wrap wt-username-final"><span class="username-at">@</span><input class="input" name="username" id="profileUsernameInput" value="${WT.escapeHTML(currentUsername)}" placeholder="tu_usuario" autocomplete="off" maxlength="16"></div><small class="username-status" id="profileUsernameStatus">Tu @usuario será único y visible en tu perfil.</small></label>
-          <label class="settings-field"><span>Nombre completo</span><input class="input" name="full_name" value="${WT.escapeHTML(profile?.full_name || "")}" placeholder="Tu nombre completo"></label>
+          <label class="settings-field"><span>Nombre completo</span><input class="input" name="full_name" id="profileFullNameInput" value="${WT.escapeHTML(normalizeFullNameText(profile?.full_name || ""))}" placeholder="Nombre Apellido" maxlength="22" autocomplete="name"><small>Máximo 22 caracteres y solo un espacio.</small></label>
           <label class="settings-field"><span>Biografía</span><textarea class="input" name="bio" rows="3" placeholder="Cuéntale a la comunidad quién eres...">${WT.escapeHTML(profile?.bio || "")}</textarea></label>
           <div class="two compact-two">
             <label class="settings-field"><span>Ciudad</span><input class="input" name="city" value="${WT.escapeHTML(profile?.city || "")}" placeholder="Ej: Mao"></label>
@@ -1714,6 +1749,7 @@
     const usernameInput = WT.qs("#profileUsernameInput", modal.element);
     const usernameStatus = WT.qs("#profileUsernameStatus", modal.element);
     const usernamePreview = WT.qs("#profileUsernamePreview", modal.element);
+    const fullNameInput = WT.qs("#profileFullNameInput", modal.element);
     let usernameCheckTimer = null;
     let lastUsernameAvailability = null;
 
@@ -1749,6 +1785,14 @@
     });
     usernameInput?.addEventListener("blur", () => refreshUsernameAvailability({ immediate: true }));
     refreshUsernameAvailability();
+
+    fullNameInput?.addEventListener("input", () => {
+      const clean = normalizeFullNameText(fullNameInput.value);
+      if (fullNameInput.value !== clean) fullNameInput.value = clean;
+    });
+    fullNameInput?.addEventListener("blur", () => {
+      fullNameInput.value = normalizeFullNameText(fullNameInput.value).trim();
+    });
 
     if (forumDarkToggle) forumDarkToggle.checked = prefs.forum_dark_mode === true || prefs.forum_dark_mode === "true";
     if (quickNavToggle) quickNavToggle.checked = prefs.hide_quick_nav === true || prefs.hide_quick_nav === "true";
@@ -1937,9 +1981,16 @@
         return WT.toast(usernameCheck.message || "Ese @usuario no está disponible.", "error", "@usuario inválido");
       }
 
+      const fullNameCheck = validateFullName(fd.get("full_name") || "");
+      if (!fullNameCheck.ok) {
+        if (fullNameInput) fullNameInput.value = fullNameCheck.fullName;
+        return WT.toast(fullNameCheck.message, "error", "Nombre inválido");
+      }
+      if (fullNameInput) fullNameInput.value = fullNameCheck.fullName;
+
       const updates = {
         username: usernameCheck.username,
-        full_name: String(fd.get("full_name") || "").trim(),
+        full_name: fullNameCheck.fullName,
         bio: String(fd.get("bio") || "").trim(),
         city: String(fd.get("city") || "").trim(),
         program_year: String(fd.get("program_year") || "").trim(),
@@ -2264,7 +2315,8 @@
     }
 
     const publicProfile = await fetchPublicProfileDetails(profileLike);
-    const friendshipStatus = await getFriendshipWithUser(publicProfile?.id || profileLike?.id || "");
+    const isSelfProfile = String(publicProfile?.id || profileLike?.id || "") === String(viewer?.id || "");
+    const friendshipStatus = isSelfProfile ? { state: "self" } : await getFriendshipWithUser(publicProfile?.id || profileLike?.id || "");
     const displayName = publicProfile?.full_name || "Estudiante";
     const initials = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase()).join("") || "U";
     const avatarUrl = avatar(publicProfile?.photo_url);
@@ -2294,7 +2346,7 @@
           <div class="public-profile-headtext">
             <div class="public-profile-title-row">
               <h3>${WT.escapeHTML(displayName)}</h3>
-              <div class="public-profile-friend-box" data-public-friend-box>${renderPublicProfileFriendAction(friendshipStatus)}</div>
+              ${isSelfProfile ? "" : `<div class="public-profile-friend-box" data-public-friend-box>${renderPublicProfileFriendAction(friendshipStatus)}</div>`}
             </div>
             ${publicProfile?.username ? `<p class="public-profile-username">${renderUsernameTag(publicProfile.username)}</p>` : ""}
             <div class="public-profile-role">${roleBadge}</div>
@@ -2308,7 +2360,7 @@
       </section>`,
       actions: [{ label: "Cerrar", className: "btn-primary" }]
     });
-    await bindPublicProfileFriendActions(modal, publicProfile, friendshipStatus);
+    if (!isSelfProfile) await bindPublicProfileFriendActions(modal, publicProfile, friendshipStatus);
   }
 
   async function requireAuth() {
