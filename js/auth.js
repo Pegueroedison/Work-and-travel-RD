@@ -221,24 +221,19 @@
   const FULL_NAME_MAX_LENGTH = 22;
 
   function normalizeFullNameText(value = "") {
-    const cleaned = String(value || "")
+    let normalized = String(value || "")
       .normalize("NFC")
       .replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s'-]/g, "")
-      .replace(/\s+/g, " ")
+      .replace(/\s{2,}/g, " ")
       .trimStart();
-    const parts = cleaned.trim().split(" ").filter(Boolean).slice(0, 2);
-    let normalized = parts.join(" ");
     if (normalized.length > FULL_NAME_MAX_LENGTH) normalized = normalized.slice(0, FULL_NAME_MAX_LENGTH).trimEnd();
     return normalized;
   }
 
   function validateFullName(value = "") {
     const normalized = normalizeFullNameText(value).trim();
-    const parts = normalized.split(" ").filter(Boolean);
-    if (!normalized) return { ok: false, fullName: normalized, message: "Escribe tu nombre y apellido." };
+    if (!normalized) return { ok: false, fullName: normalized, message: "Escribe tu nombre completo." };
     if (normalized.length > FULL_NAME_MAX_LENGTH) return { ok: false, fullName: normalized, message: `El nombre no puede pasar de ${FULL_NAME_MAX_LENGTH} caracteres.` };
-    if (parts.length !== 2) return { ok: false, fullName: normalized, message: "Escribe solo nombre y apellido, separados por un espacio." };
-    if (parts.some(part => part.length < 2)) return { ok: false, fullName: normalized, message: "El nombre y el apellido deben tener al menos 2 letras." };
     return { ok: true, fullName: normalized, message: "Nombre válido." };
   }
 
@@ -908,7 +903,7 @@
       <div class="auth-divider"><span>o usa tu correo</span></div>
     </div>
     <form class="form-grid auth-modern-form" id="authForm">
-      ${!isLogin ? `<label>Nombre completo<input class="input" name="full_name" required placeholder="Nombre Apellido" maxlength="22" inputmode="text" autocomplete="name"><small class="form-help">Máximo 22 caracteres y solo un espacio.</small></label>` : ""}
+      ${!isLogin ? `<label>Nombre completo<input class="input" name="full_name" required placeholder="Nombre completo" maxlength="22" inputmode="text" autocomplete="name"><small class="form-help">Máximo 22 caracteres.</small></label>` : ""}
       <label>Correo<input class="input" type="email" name="email" required placeholder="correo@ejemplo.com"></label>
       <label>Contraseña<input class="input" type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres"></label>
       <button class="btn btn-primary auth-submit" type="submit">${isLogin ? "Iniciar sesión" : "Crear cuenta"}</button>
@@ -1691,7 +1686,7 @@
         <h4>Perfil público</h4>
         <div class="settings-list settings-edit-list">
           <label class="settings-field username-field"><span>@usuario</span><div class="username-input-wrap wt-username-final"><span class="username-at">@</span><input class="input" name="username" id="profileUsernameInput" value="${WT.escapeHTML(currentUsername)}" placeholder="tu_usuario" autocomplete="off" maxlength="16"></div><small class="username-status" id="profileUsernameStatus">Tu @usuario será único y visible en tu perfil.</small></label>
-          <label class="settings-field"><span>Nombre completo</span><input class="input" name="full_name" id="profileFullNameInput" value="${WT.escapeHTML(normalizeFullNameText(profile?.full_name || ""))}" placeholder="Nombre Apellido" maxlength="22" autocomplete="name"><small>Máximo 22 caracteres y solo un espacio.</small></label>
+          <label class="settings-field"><span>Nombre completo</span><input class="input" name="full_name" id="profileFullNameInput" value="${WT.escapeHTML(normalizeFullNameText(profile?.full_name || ""))}" placeholder="Nombre completo" maxlength="22" autocomplete="name"><small>Máximo 22 caracteres.</small></label>
           <label class="settings-field"><span>Biografía</span><textarea class="input" name="bio" rows="3" placeholder="Cuéntale a la comunidad quién eres...">${WT.escapeHTML(profile?.bio || "")}</textarea></label>
           <div class="two compact-two">
             <label class="settings-field"><span>Ciudad</span><input class="input" name="city" value="${WT.escapeHTML(profile?.city || "")}" placeholder="Ej: Mao"></label>
