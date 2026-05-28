@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4050: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4054: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4050: primero intenta usar la función RPC inteligente.
+    // V4054: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4050", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4054", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4050: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4054: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -3789,7 +3789,7 @@
       targetComment = pre?.data || null;
     } catch (_) {}
     const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
-      const rpc = await WT.supabase.rpc("approve_forum_comment_v4050", { comment_id: commentId });
+      const rpc = await WT.supabase.rpc("approve_forum_comment_v4054", { comment_id: commentId });
       if (!rpc.error) return rpc;
       return WT.supabase
         .from("forum_comments")
@@ -3897,7 +3897,7 @@
       targetPost = pre?.data || null;
     } catch (_) {}
     const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
-      const rpc = await WT.supabase.rpc("approve_forum_post_v4050", { post_id: postId });
+      const rpc = await WT.supabase.rpc("approve_forum_post_v4054", { post_id: postId });
       if (!rpc.error) return rpc;
       const legacy = await WT.supabase.rpc("approve_forum_post", { post_id: postId });
       if (!legacy.error) return legacy;
