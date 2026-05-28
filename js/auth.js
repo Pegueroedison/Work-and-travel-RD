@@ -219,6 +219,58 @@
 
   const USERNAME_MAX_LENGTH = 16;
   const FULL_NAME_MAX_LENGTH = 22;
+  const PROFILE_BIO_MAX_LENGTH = 180;
+  const PROFILE_SPONSOR_MAX_LENGTH = 15;
+  const PROFILE_YEAR_LENGTH = 4;
+
+  const PROFILE_FALLBACK_BLOCKED_TERMS = [
+    "puta", "puto", "mierda", "maldito", "maldita", "coño", "pinga", "ñema", "nema", "monda", "mondo", "pajero",
+    "porn", "porno", "pornografia", "pornography", "xxx", "onlyfans", "xvideos", "xnxx", "redtube", "pornhub"
+  ];
+
+  function detectProfileBadWords(...parts) {
+    const raw = parts.map(v => String(v || "")).join(" ").trim();
+    if (!raw) return null;
+    if (window.WTForumModeration?.testText) {
+      try {
+        const hit = window.WTForumModeration.testText(raw);
+        if (hit) return hit;
+      } catch (_) {}
+    }
+    const normalized = raw
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+    const compact = normalized.replace(/[^a-z0-9ñ]/g, "");
+    const hit = PROFILE_FALLBACK_BLOCKED_TERMS.find(term => compact.includes(String(term).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9ñ]/g, "")));
+    return hit ? { type: "offensive_language", term: hit } : null;
+  }
+
+  function normalizeProfileBio(value = "") {
+    const normalized = String(value || "").normalize("NFC").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s{2,}/g, " ").trimStart();
+    return normalized.length > PROFILE_BIO_MAX_LENGTH ? normalized.slice(0, PROFILE_BIO_MAX_LENGTH).trimEnd() : normalized;
+  }
+
+  function normalizeProfileSponsor(value = "") {
+    const normalized = String(value || "").normalize("NFC").replace(/[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9\s.&-]/g, "").replace(/\s{2,}/g, " ").trimStart();
+    return normalized.length > PROFILE_SPONSOR_MAX_LENGTH ? normalized.slice(0, PROFILE_SPONSOR_MAX_LENGTH).trimEnd() : normalized;
+  }
+
+  function normalizeProfileYear(value = "") {
+    return String(value || "").replace(/\D+/g, "").slice(0, PROFILE_YEAR_LENGTH);
+  }
+
+  function validateProfileFields({ fullName = "", bio = "", sponsor = "", programYear = "" } = {}) {
+    const cleanBio = normalizeProfileBio(bio).trim();
+    const cleanSponsor = normalizeProfileSponsor(sponsor).trim();
+    const cleanYear = normalizeProfileYear(programYear);
+    if (cleanBio.length > PROFILE_BIO_MAX_LENGTH) return { ok: false, message: `La biografía no puede pasar de ${PROFILE_BIO_MAX_LENGTH} caracteres.` };
+    if (cleanSponsor.length > PROFILE_SPONSOR_MAX_LENGTH) return { ok: false, message: `El sponsor no puede pasar de ${PROFILE_SPONSOR_MAX_LENGTH} caracteres.` };
+    if (String(programYear || "").trim() && cleanYear.length !== PROFILE_YEAR_LENGTH) return { ok: false, message: "El año del programa debe tener 4 números." };
+    const bad = detectProfileBadWords(fullName, cleanBio, cleanSponsor);
+    if (bad) return { ok: false, message: "No se pudo guardar porque el perfil contiene contenido no permitido." };
+    return { ok: true, bio: cleanBio, sponsor: cleanSponsor, programYear: cleanYear };
+  }
 
   const PROFILE_SPANISH_COUNTRIES = [
     "República Dominicana",
@@ -1003,6 +1055,7 @@
       const fd = new FormData(form);
       const nameCheck = validateFullName(fd.get("full_name") || "");
       if (!nameCheck.ok) return WT.toast(nameCheck.message, "error", "Nombre inválido");
+      if (detectProfileBadWords(nameCheck.fullName)) return WT.toast("No se pudo crear la cuenta porque el nombre contiene contenido no permitido.", "error", "Nombre inválido");
       if (fullNameInput) fullNameInput.value = nameCheck.fullName;
       fd.set("full_name", nameCheck.fullName);
       const redirectTo = `${appBaseUrl()}index.html?type=signup`;
@@ -1747,13 +1800,10 @@
         <div class="settings-list settings-edit-list">
           <label class="settings-field username-field"><span>@usuario</span><div class="username-input-wrap wt-username-final"><span class="username-at">@</span><input class="input" name="username" id="profileUsernameInput" value="${WT.escapeHTML(currentUsername)}" placeholder="tu_usuario" autocomplete="off" maxlength="16"></div><small class="username-status" id="profileUsernameStatus">Tu @usuario será único y visible en tu perfil.</small></label>
           <label class="settings-field"><span>Nombre completo</span><input class="input" name="full_name" id="profileFullNameInput" value="${WT.escapeHTML(normalizeFullNameText(profile?.full_name || ""))}" placeholder="Nombre completo" maxlength="22" autocomplete="name"><small>Máximo 22 caracteres.</small></label>
-          <label class="settings-field"><span>Biografía</span><textarea class="input" name="bio" rows="3" placeholder="Cuéntale a la comunidad quién eres...">${WT.escapeHTML(profile?.bio || "")}</textarea></label>
-          <div class="two compact-two">
-            <label class="settings-field"><span>Ciudad</span><input class="input" name="city" value="${WT.escapeHTML(profile?.city || "")}" placeholder="Ej: Mao"></label>
-            <label class="settings-field"><span>Año del programa</span><input class="input" name="program_year" value="${WT.escapeHTML(profile?.program_year || "")}" placeholder="Ej: 2026"></label>
-          </div>
+          <label class="settings-field"><span>Biografía</span><textarea class="input" name="bio" id="profileBioInput" rows="3" maxlength="180" placeholder="Cuéntale a la comunidad quién eres...">${WT.escapeHTML(normalizeProfileBio(profile?.bio || ""))}</textarea><small>Máximo 180 caracteres.</small></label>
+          <label class="settings-field"><span>Año del programa</span><input class="input" name="program_year" id="profileProgramYearInput" value="${WT.escapeHTML(normalizeProfileYear(profile?.program_year || ""))}" placeholder="Ej: 2026" maxlength="4" inputmode="numeric" pattern="[0-9]{4}"><small>Solo 4 números.</small></label>
           <label class="settings-field country-select-field"><span>País</span><input type="hidden" name="country" id="profileCountryInput" value="${WT.escapeHTML(currentCountry)}"><button type="button" class="profile-country-button" id="profileCountryButton" aria-label="Selecciona tu país"><span id="profileCountryButtonText">${WT.escapeHTML(currentCountry || "Selecciona tu país")}</span><span class="profile-country-button-icon">⌄</span></button><small>Selecciona tu país.</small></label>
-          <label class="settings-field"><span>Sponsor</span><input class="input" name="sponsor" value="${WT.escapeHTML(profile?.sponsor || "")}" placeholder="Ej: Greenheart"></label>
+          <label class="settings-field"><span>Sponsor</span><input class="input" name="sponsor" id="profileSponsorInput" value="${WT.escapeHTML(normalizeProfileSponsor(profile?.sponsor || ""))}" placeholder="Ej: Greenheart" maxlength="15"><small>Máximo 15 caracteres.</small></label>
         </div>
       </section>
 
@@ -1806,6 +1856,9 @@
     const usernameStatus = WT.qs("#profileUsernameStatus", modal.element);
     const usernamePreview = WT.qs("#profileUsernamePreview", modal.element);
     const fullNameInput = WT.qs("#profileFullNameInput", modal.element);
+    const bioInput = WT.qs("#profileBioInput", modal.element);
+    const programYearInput = WT.qs("#profileProgramYearInput", modal.element);
+    const sponsorInput = WT.qs("#profileSponsorInput", modal.element);
     const countryInput = WT.qs("#profileCountryInput", modal.element);
     const countryButton = WT.qs("#profileCountryButton", modal.element);
     const countryButtonText = WT.qs("#profileCountryButtonText", modal.element);
@@ -1851,6 +1904,18 @@
     });
     fullNameInput?.addEventListener("blur", () => {
       fullNameInput.value = normalizeFullNameText(fullNameInput.value).trim();
+    });
+    bioInput?.addEventListener("input", () => {
+      const clean = normalizeProfileBio(bioInput.value);
+      if (bioInput.value !== clean) bioInput.value = clean;
+    });
+    sponsorInput?.addEventListener("input", () => {
+      const clean = normalizeProfileSponsor(sponsorInput.value);
+      if (sponsorInput.value !== clean) sponsorInput.value = clean;
+    });
+    programYearInput?.addEventListener("input", () => {
+      const clean = normalizeProfileYear(programYearInput.value);
+      if (programYearInput.value !== clean) programYearInput.value = clean;
     });
 
     function setSelectedCountry(country = "") {
@@ -2122,14 +2187,27 @@
         return WT.toast("Selecciona un país válido de la lista.", "error", "País inválido");
       }
 
+      const profileFieldCheck = validateProfileFields({
+        fullName: fullNameCheck.fullName,
+        bio: fd.get("bio") || "",
+        sponsor: fd.get("sponsor") || "",
+        programYear: fd.get("program_year") || ""
+      });
+      if (!profileFieldCheck.ok) {
+        if (bioInput) bioInput.value = normalizeProfileBio(fd.get("bio") || "").trim();
+        if (sponsorInput) sponsorInput.value = normalizeProfileSponsor(fd.get("sponsor") || "").trim();
+        if (programYearInput) programYearInput.value = normalizeProfileYear(fd.get("program_year") || "");
+        return WT.toast(profileFieldCheck.message, "error", "Perfil inválido");
+      }
+
       const updates = {
         username: usernameCheck.username,
         full_name: fullNameCheck.fullName,
-        bio: String(fd.get("bio") || "").trim(),
-        city: String(fd.get("city") || "").trim(),
+        bio: profileFieldCheck.bio,
+        city: null,
         country: selectedCountry,
-        program_year: String(fd.get("program_year") || "").trim(),
-        sponsor: String(fd.get("sponsor") || "").trim()
+        program_year: profileFieldCheck.programYear,
+        sponsor: profileFieldCheck.sponsor
       };
 
       const preferencesToSave = normalizePreferences({
@@ -2458,12 +2536,10 @@
     const roleBadge = WT.renderRoleBadge(publicProfile?.role || "user");
     const badges = WT.renderUserBadges(publicProfile?.badges || []);
     const bio = String(publicProfile?.bio || "").trim();
-    const city = String(publicProfile?.city || "").trim();
     const sponsor = String(publicProfile?.sponsor || "").trim();
     const year = String(publicProfile?.program_year || "").trim();
     const country = String(publicProfile?.country || "").trim();
     const meta = [
-      city ? `<div class="public-profile-chip">📍 ${WT.escapeHTML(city)}</div>` : "",
       country ? `<div class="public-profile-chip">🌎 ${WT.escapeHTML(country)}</div>` : "",
       sponsor ? `<div class="public-profile-chip">🤝 ${WT.escapeHTML(sponsor)}</div>` : "",
       year ? `<div class="public-profile-chip">✈️ ${WT.escapeHTML(year)}</div>` : ""
@@ -2491,7 +2567,7 @@
         <div class="public-profile-bio-card">
           ${bio ? `<p class="public-profile-bio">${WT.escapeHTML(bio)}</p>` : `<p class="public-profile-bio is-empty">Este usuario todavía no ha agregado una biografía pública.</p>`}
         </div>
-        ${meta ? `<div class="public-profile-meta">${meta}</div>` : `<div class="public-profile-meta is-empty">Sin ciudad, sponsor o año agregado.</div>`}
+        ${meta ? `<div class="public-profile-meta">${meta}</div>` : `<div class="public-profile-meta is-empty">Sin país, sponsor o año agregado.</div>`}
       </section>`,
       actions: [{ label: "Cerrar", className: "btn-primary" }]
     });

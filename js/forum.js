@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4069: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4070: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4069: primero intenta usar la función RPC inteligente.
+    // V4070: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4069", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4070", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4069: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4070: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];

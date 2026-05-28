@@ -63,7 +63,7 @@
   }
 
   async function adminQuery(action) {
-    // V4069: no forzar refreshSession antes de guardar.
+    // V4070: no forzar refreshSession antes de guardar.
     // Mantiene el comportamiento estable de archivos de v4045 y evita que el panel admin se quede esperando.
     if (WT.runWithSession) return WT.runWithSession(action);
     return action();
