@@ -847,7 +847,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .btn-primary,
 }
 
 /* ==========================================================
-   V4065 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
+   V4066 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
    El modal publico NO queda oscuro por defecto: solo se oscurece
    cuando el foro esta en modo oscuro (.wt-forum-dark).
    ========================================================== */
@@ -995,7 +995,7 @@ html.wt-forum-dark .modal-card.wt-profile-final-modal .modal-close {
 }
 
 /* ==========================================================
-   V4065 - Perfil público: scroll real, cerrar visible y layout estable
+   V4066 - Perfil público: scroll real, cerrar visible y layout estable
    ========================================================== */
 body .modal-backdrop .modal-card.public-profile-modal,
 body .modal-backdrop .modal-card.wt-profile-final-modal,
@@ -1108,7 +1108,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-b
 }
 
 /* ==========================================================
-   V4065 - PERFIL PUBLICO AJUSTADO PARA QUE TODO ENCAJE BIEN
+   V4066 - PERFIL PUBLICO AJUSTADO PARA QUE TODO ENCAJE BIEN
    - evita que las chips choquen con el botón Cerrar
    - mejora el scroll real en iPhone/Android
    - reduce el alto visual del bloque para que entre mejor
@@ -1306,7 +1306,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-chip,
 }
 
 /* ==========================================================
-   V4065 - Perfil público: encabezado compacto y amistad visible
+   V4066 - Perfil público: encabezado compacto y amistad visible
    - El nombre, @usuario y rol quedan juntos como en el perfil propio.
    - El botón de amistad no separa el encabezado ni se pierde en modo claro.
    ========================================================== */
@@ -1487,5 +1487,116 @@ body.wt-dark-mode .modal-card.wt-profile-final-modal .public-profile-friend-btn.
     width: 46px !important;
     height: 46px !important;
     min-width: 46px !important;
+  }
+}
+
+/* ==========================================================
+   V4066 - País en Mi perfil y acciones visibles en perfil público
+   ========================================================== */
+.profile-settings-modal .country-select-field input[list] {
+  padding-right: 42px !important;
+  background-image: linear-gradient(45deg, transparent 50%, rgba(11,47,107,.75) 50%), linear-gradient(135deg, rgba(11,47,107,.75) 50%, transparent 50%) !important;
+  background-position: calc(100% - 22px) 50%, calc(100% - 16px) 50% !important;
+  background-size: 6px 6px, 6px 6px !important;
+  background-repeat: no-repeat !important;
+}
+
+/* La caja inferior del perfil público no se elimina: en modo claro debe verse como parte del diseño. */
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-meta.is-empty,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-meta.is-empty,
+.modal-card.public-profile-modal .public-profile-meta.is-empty,
+.modal-card.wt-profile-final-modal .public-profile-meta.is-empty {
+  min-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 14px 18px !important;
+  border-radius: 24px !important;
+  background: #f4f8ff !important;
+  border: 1px solid rgba(18,45,92,.08) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 10px 24px rgba(10,30,70,.06) !important;
+  color: transparent !important;
+}
+
+html.wt-forum-dark body .modal-backdrop .modal-card.public-profile-modal .public-profile-meta.is-empty,
+html.wt-forum-dark body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-meta.is-empty,
+html.wt-forum-dark .modal-card.public-profile-modal .public-profile-meta.is-empty,
+html.wt-forum-dark .modal-card.wt-profile-final-modal .public-profile-meta.is-empty,
+html.wt-dark-mode body .modal-backdrop .modal-card.public-profile-modal .public-profile-meta.is-empty,
+html.wt-dark-mode body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-meta.is-empty,
+body.wt-dark-mode .modal-card.public-profile-modal .public-profile-meta.is-empty,
+body.wt-dark-mode .modal-card.wt-profile-final-modal .public-profile-meta.is-empty {
+  background: rgba(23,34,53,.72) !important;
+  border-color: rgba(148,163,184,.16) !important;
+  box-shadow: none !important;
+  color: transparent !important;
+}
+
+/* En modo claro, el botón/acción de amistad del perfil público debe verse claramente. */
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-btn.compact,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-btn.compact,
+.modal-card.public-profile-modal .public-profile-friend-btn.compact,
+.modal-card.wt-profile-final-modal .public-profile-friend-btn.compact,
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-btn.soft.compact,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-btn.soft.compact,
+.modal-card.public-profile-modal .public-profile-friend-btn.soft.compact,
+.modal-card.wt-profile-final-modal .public-profile-friend-btn.soft.compact {
+  background: #f7fbff !important;
+  color: #0b4fb3 !important;
+  border: 1px solid rgba(30, 120, 210, .28) !important;
+  box-shadow: 0 12px 30px rgba(30, 120, 210, .18) !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-actions.compact,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact,
+.modal-card.public-profile-modal .public-profile-friend-actions.compact,
+.modal-card.wt-profile-final-modal .public-profile-friend-actions.compact {
+  width: auto !important;
+  max-width: min(190px, 42vw) !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+.modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+.modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact {
+  flex: 0 0 auto !important;
+}
+
+/* Si hay solicitud entrante, el texto Aceptar/Rechazar debe poder leerse. */
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact b,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact b,
+.modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact b,
+.modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact b {
+  display: inline !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  margin-left: 3px !important;
+  line-height: 1 !important;
+}
+
+body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+.modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+.modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact {
+  width: auto !important;
+  min-width: 76px !important;
+  padding: 0 9px !important;
+  border-radius: 999px !important;
+}
+
+@media (max-width: 520px) {
+  body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-actions.compact,
+  body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact,
+  .modal-card.public-profile-modal .public-profile-friend-actions.compact,
+  .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact {
+    flex-direction: column !important;
+    gap: 5px !important;
+  }
+  body .modal-backdrop .modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+  body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+  .modal-card.public-profile-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact,
+  .modal-card.wt-profile-final-modal .public-profile-friend-actions.compact .public-profile-friend-btn.compact {
+    min-width: 70px !important;
+    height: 36px !important;
+    min-height: 36px !important;
   }
 }

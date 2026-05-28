@@ -220,6 +220,40 @@
   const USERNAME_MAX_LENGTH = 16;
   const FULL_NAME_MAX_LENGTH = 22;
 
+  const PROFILE_SPANISH_COUNTRIES = [
+    "República Dominicana",
+    "México",
+    "Colombia",
+    "Venezuela",
+    "Perú",
+    "Ecuador",
+    "Chile",
+    "Argentina",
+    "Bolivia",
+    "Paraguay",
+    "Uruguay",
+    "España",
+    "Guatemala",
+    "Honduras",
+    "El Salvador",
+    "Nicaragua",
+    "Costa Rica",
+    "Panamá",
+    "Cuba",
+    "Guinea Ecuatorial"
+  ];
+
+  function normalizeProfileCountry(value = "") {
+    const raw = String(value || "").normalize("NFC").replace(/\s+/g, " ").trim();
+    if (!raw) return "";
+    const found = PROFILE_SPANISH_COUNTRIES.find(country => country.toLowerCase() === raw.toLowerCase());
+    return found || "";
+  }
+
+  function profileCountryOptionsHTML() {
+    return PROFILE_SPANISH_COUNTRIES.map(country => `<option value="${WT.escapeHTML(country)}"></option>`).join("");
+  }
+
   function normalizeFullNameText(value = "") {
     let normalized = String(value || "")
       .normalize("NFC")
@@ -1692,6 +1726,7 @@
             <label class="settings-field"><span>Ciudad</span><input class="input" name="city" value="${WT.escapeHTML(profile?.city || "")}" placeholder="Ej: Mao"></label>
             <label class="settings-field"><span>Año del programa</span><input class="input" name="program_year" value="${WT.escapeHTML(profile?.program_year || "")}" placeholder="Ej: 2026"></label>
           </div>
+          <label class="settings-field country-select-field"><span>País</span><input class="input" name="country" id="profileCountryInput" list="profileCountryList" value="${WT.escapeHTML(normalizeProfileCountry(profile?.country || ""))}" placeholder="Buscar o seleccionar país" autocomplete="off"><datalist id="profileCountryList">${profileCountryOptionsHTML()}</datalist><small>Selecciona un país de habla hispana.</small></label>
           <label class="settings-field"><span>Sponsor</span><input class="input" name="sponsor" value="${WT.escapeHTML(profile?.sponsor || "")}" placeholder="Ej: Greenheart"></label>
         </div>
       </section>
@@ -1745,6 +1780,7 @@
     const usernameStatus = WT.qs("#profileUsernameStatus", modal.element);
     const usernamePreview = WT.qs("#profileUsernamePreview", modal.element);
     const fullNameInput = WT.qs("#profileFullNameInput", modal.element);
+    const countryInput = WT.qs("#profileCountryInput", modal.element);
     let usernameCheckTimer = null;
     let lastUsernameAvailability = null;
 
@@ -1787,6 +1823,16 @@
     });
     fullNameInput?.addEventListener("blur", () => {
       fullNameInput.value = normalizeFullNameText(fullNameInput.value).trim();
+    });
+
+    countryInput?.addEventListener("blur", () => {
+      const normalizedCountry = normalizeProfileCountry(countryInput.value);
+      if (countryInput.value.trim() && !normalizedCountry) {
+        countryInput.value = "";
+        WT.toast("Selecciona un país válido de la lista.", "warning");
+        return;
+      }
+      countryInput.value = normalizedCountry;
     });
 
     if (forumDarkToggle) forumDarkToggle.checked = prefs.forum_dark_mode === true || prefs.forum_dark_mode === "true";
@@ -1988,6 +2034,7 @@
         full_name: fullNameCheck.fullName,
         bio: String(fd.get("bio") || "").trim(),
         city: String(fd.get("city") || "").trim(),
+        country: normalizeProfileCountry(fd.get("country") || ""),
         program_year: String(fd.get("program_year") || "").trim(),
         sponsor: String(fd.get("sponsor") || "").trim()
       };
