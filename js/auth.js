@@ -1752,7 +1752,7 @@
             <label class="settings-field"><span>Ciudad</span><input class="input" name="city" value="${WT.escapeHTML(profile?.city || "")}" placeholder="Ej: Mao"></label>
             <label class="settings-field"><span>Año del programa</span><input class="input" name="program_year" value="${WT.escapeHTML(profile?.program_year || "")}" placeholder="Ej: 2026"></label>
           </div>
-          <label class="settings-field country-select-field"><span>País</span><div class="profile-country-combobox" id="profileCountryCombobox"><input class="input" name="country" id="profileCountryInput" value="${WT.escapeHTML(currentCountry)}" placeholder="Selecciona tu país" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="profileCountryOptions"><button class="profile-country-toggle" type="button" id="profileCountryToggle" aria-label="Ver países">⌄</button><div class="profile-country-options" id="profileCountryOptions" hidden></div></div><small>Selecciona tu país.</small></label>
+          <label class="settings-field country-select-field"><span>País</span><input type="hidden" name="country" id="profileCountryInput" value="${WT.escapeHTML(currentCountry)}"><button type="button" class="profile-country-button" id="profileCountryButton" aria-label="Selecciona tu país"><span id="profileCountryButtonText">${WT.escapeHTML(currentCountry || "Selecciona tu país")}</span><span class="profile-country-button-icon">⌄</span></button><small>Selecciona tu país.</small></label>
           <label class="settings-field"><span>Sponsor</span><input class="input" name="sponsor" value="${WT.escapeHTML(profile?.sponsor || "")}" placeholder="Ej: Greenheart"></label>
         </div>
       </section>
@@ -1807,8 +1807,8 @@
     const usernamePreview = WT.qs("#profileUsernamePreview", modal.element);
     const fullNameInput = WT.qs("#profileFullNameInput", modal.element);
     const countryInput = WT.qs("#profileCountryInput", modal.element);
-    const countryToggle = WT.qs("#profileCountryToggle", modal.element);
-    const countryOptionsBox = WT.qs("#profileCountryOptions", modal.element);
+    const countryButton = WT.qs("#profileCountryButton", modal.element);
+    const countryButtonText = WT.qs("#profileCountryButtonText", modal.element);
     let usernameCheckTimer = null;
     let lastUsernameAvailability = null;
 
@@ -1853,52 +1853,71 @@
       fullNameInput.value = normalizeFullNameText(fullNameInput.value).trim();
     });
 
-    function renderCountryOptions(query = "") {
-      if (!countryOptionsBox || !countryInput) return;
-      const matches = countryOptions.filter(country => countryMatchesSearch(country, query)).slice(0, 12);
-      countryOptionsBox.innerHTML = matches.length
-        ? matches.map(country => `<button type="button" class="profile-country-option" data-country="${WT.escapeHTML(country)}">${WT.escapeHTML(country)}</button>`).join("")
-        : `<div class="profile-country-empty">No aparece ese país.</div>`;
-      countryOptionsBox.hidden = false;
-      countryInput.setAttribute("aria-expanded", "true");
+    function setSelectedCountry(country = "") {
+      const normalized = normalizeProfileCountry(country, countryOptions);
+      if (countryInput) countryInput.value = normalized;
+      if (countryButtonText) countryButtonText.textContent = normalized || "Selecciona tu país";
+      countryButton?.classList.toggle("has-value", Boolean(normalized));
     }
 
-    function hideCountryOptions() {
-      if (!countryOptionsBox || !countryInput) return;
-      countryOptionsBox.hidden = true;
-      countryInput.setAttribute("aria-expanded", "false");
-    }
+    function openCountryPicker() {
+      let query = "";
+      let picker = null;
 
-    countryInput?.addEventListener("focus", () => renderCountryOptions(countryInput.value));
-    countryInput?.addEventListener("input", () => renderCountryOptions(countryInput.value));
-    countryToggle?.addEventListener("click", (event) => {
-      event.preventDefault();
-      if (countryOptionsBox?.hidden) {
-        countryInput?.focus();
-        renderCountryOptions(countryInput?.value || "");
-      } else {
-        hideCountryOptions();
-      }
-    });
-    countryOptionsBox?.addEventListener("mousedown", (event) => {
-      const option = event.target.closest("[data-country]");
-      if (!option || !countryInput) return;
-      event.preventDefault();
-      countryInput.value = option.dataset.country || "";
-      hideCountryOptions();
-    });
-    countryInput?.addEventListener("blur", () => {
-      setTimeout(() => {
-        const normalizedCountry = normalizeProfileCountry(countryInput.value, countryOptions);
-        if (countryInput.value.trim() && !normalizedCountry) {
-          countryInput.value = "";
-          WT.toast("Selecciona un país válido de la lista.", "warning");
-          hideCountryOptions();
+      const renderList = () => {
+        const list = picker?.querySelector("#countryPickerList");
+        if (!list) return;
+        const matches = countryOptions.filter(country => countryMatchesSearch(country, query)).slice(0, 24);
+        list.innerHTML = matches.length
+          ? matches.map(country => `<button type="button" class="country-picker-option" data-country="${WT.escapeHTML(country)}"><span>${WT.escapeHTML(country)}</span>${country === (countryInput?.value || "") ? '<b>✓</b>' : ""}</button>`).join("")
+          : `<div class="country-picker-empty">No aparece ese país.</div>`;
+      };
+
+      picker = document.createElement("div");
+      picker.className = "country-picker-backdrop";
+      picker.innerHTML = `<div class="country-picker-sheet" role="dialog" aria-modal="true" aria-label="Selecciona tu país">
+        <div class="country-picker-handle" aria-hidden="true"></div>
+        <div class="country-picker-head">
+          <h3>Selecciona tu país</h3>
+          <button type="button" class="country-picker-close" aria-label="Cerrar">×</button>
+        </div>
+        <div class="country-picker-search-wrap">
+          <input class="country-picker-search" id="countryPickerSearch" type="search" placeholder="Buscar país..." autocomplete="off" inputmode="search">
+        </div>
+        <div class="country-picker-list" id="countryPickerList"></div>
+      </div>`;
+
+      const closePicker = () => {
+        picker?.remove();
+        picker = null;
+      };
+
+      picker.addEventListener("click", (event) => {
+        if (event.target === picker || event.target.closest(".country-picker-close")) {
+          closePicker();
           return;
         }
-        countryInput.value = normalizedCountry;
-        hideCountryOptions();
-      }, 140);
+        const option = event.target.closest("[data-country]");
+        if (option) {
+          setSelectedCountry(option.dataset.country || "");
+          closePicker();
+        }
+      });
+
+      document.body.appendChild(picker);
+      renderList();
+      const search = picker.querySelector("#countryPickerSearch");
+      search?.addEventListener("input", () => {
+        query = search.value || "";
+        renderList();
+      });
+      setTimeout(() => search?.focus?.(), 80);
+    }
+
+    setSelectedCountry(currentCountry);
+    countryButton?.addEventListener("click", (event) => {
+      event.preventDefault();
+      openCountryPicker();
     });
 
     if (forumDarkToggle) forumDarkToggle.checked = prefs.forum_dark_mode === true || prefs.forum_dark_mode === "true";

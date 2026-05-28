@@ -15474,7 +15474,7 @@ html.wt-forum-dark .comment-reply-context{
 
 
 /* ==========================================================
-   V4067 - Menciones inteligentes: motivo del resultado
+   V4068 - Menciones inteligentes: motivo del resultado
    ========================================================== */
 .forum-mention-option-text small {
   display: flex !important;
@@ -15520,7 +15520,7 @@ body.wt-dark-mode .forum-mention-option-text small em {
 }
 
 /* ==========================================================
-   V4067 - Menciones: etiquetas claras, no mostrar "Admin" como motivo
+   V4068 - Menciones: etiquetas claras, no mostrar "Admin" como motivo
    ========================================================== */
 .forum-mention-option-text small em {
   max-width: 150px !important;
@@ -15529,7 +15529,7 @@ body.wt-dark-mode .forum-mention-option-text small em {
   display: none !important;
 }
 
-/* V4067 - El @usuario automático de una respuesta también abre el perfil público */
+/* V4068 - El @usuario automático de una respuesta también abre el perfil público */
 .ig-comment-text .ig-reply-prefix.forum-mention-link {
   appearance: none !important;
   border: 0 !important;

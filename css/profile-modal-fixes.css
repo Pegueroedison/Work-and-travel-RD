@@ -847,7 +847,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .btn-primary,
 }
 
 /* ==========================================================
-   V4067 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
+   V4068 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
    El modal publico NO queda oscuro por defecto: solo se oscurece
    cuando el foro esta en modo oscuro (.wt-forum-dark).
    ========================================================== */
@@ -995,7 +995,7 @@ html.wt-forum-dark .modal-card.wt-profile-final-modal .modal-close {
 }
 
 /* ==========================================================
-   V4067 - Perfil público: scroll real, cerrar visible y layout estable
+   V4068 - Perfil público: scroll real, cerrar visible y layout estable
    ========================================================== */
 body .modal-backdrop .modal-card.public-profile-modal,
 body .modal-backdrop .modal-card.wt-profile-final-modal,
@@ -1108,7 +1108,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-b
 }
 
 /* ==========================================================
-   V4067 - PERFIL PUBLICO AJUSTADO PARA QUE TODO ENCAJE BIEN
+   V4068 - PERFIL PUBLICO AJUSTADO PARA QUE TODO ENCAJE BIEN
    - evita que las chips choquen con el botón Cerrar
    - mejora el scroll real en iPhone/Android
    - reduce el alto visual del bloque para que entre mejor
@@ -1306,7 +1306,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-chip,
 }
 
 /* ==========================================================
-   V4067 - Perfil público: encabezado compacto y amistad visible
+   V4068 - Perfil público: encabezado compacto y amistad visible
    - El nombre, @usuario y rol quedan juntos como en el perfil propio.
    - El botón de amistad no separa el encabezado ni se pierde en modo claro.
    ========================================================== */
@@ -1491,7 +1491,7 @@ body.wt-dark-mode .modal-card.wt-profile-final-modal .public-profile-friend-btn.
 }
 
 /* ==========================================================
-   V4067 - País en Mi perfil y acciones visibles en perfil público
+   V4068 - País en Mi perfil y acciones visibles en perfil público
    ========================================================== */
 .profile-settings-modal .country-select-field input[list] {
   padding-right: 42px !important;
@@ -1602,7 +1602,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-a
 }
 
 /* ==========================================================
-   V4067 - País desde Supabase con selector buscable
+   V4068 - País desde Supabase con selector buscable
    ========================================================== */
 .profile-settings-modal .profile-country-combobox {
   position: relative !important;
@@ -1709,4 +1709,228 @@ html.wt-forum-dark .profile-settings-modal .profile-country-empty,
 html.wt-dark-mode .profile-settings-modal .profile-country-empty,
 body.wt-dark-mode .profile-settings-modal .profile-country-empty {
   color: #cbd5e1 !important;
+}
+
+/* ==========================================================
+   V4068 - Selector de país como bottom sheet buscable
+   ========================================================== */
+.profile-settings-modal .profile-country-button {
+  width: 100% !important;
+  min-height: 58px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 0 16px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(18,45,92,.12) !important;
+  background: #f7f9ff !important;
+  color: #9aa4b5 !important;
+  font: inherit !important;
+  font-weight: 850 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72) !important;
+}
+
+.profile-settings-modal .profile-country-button.has-value {
+  color: #0b1736 !important;
+}
+
+.profile-settings-modal .profile-country-button-icon {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255,255,255,.86) !important;
+  border: 1px solid rgba(18,45,92,.10) !important;
+  color: #0b2f6b !important;
+  line-height: 1 !important;
+}
+
+html.wt-forum-dark .profile-settings-modal .profile-country-button,
+html.wt-dark-mode .profile-settings-modal .profile-country-button,
+body.wt-dark-mode .profile-settings-modal .profile-country-button {
+  background: rgba(15,23,42,.88) !important;
+  border-color: rgba(148,163,184,.22) !important;
+  color: #94a3b8 !important;
+}
+
+html.wt-forum-dark .profile-settings-modal .profile-country-button.has-value,
+html.wt-dark-mode .profile-settings-modal .profile-country-button.has-value,
+body.wt-dark-mode .profile-settings-modal .profile-country-button.has-value {
+  color: #f8fafc !important;
+}
+
+html.wt-forum-dark .profile-settings-modal .profile-country-button-icon,
+html.wt-dark-mode .profile-settings-modal .profile-country-button-icon,
+body.wt-dark-mode .profile-settings-modal .profile-country-button-icon {
+  background: rgba(30,41,59,.92) !important;
+  border-color: rgba(148,163,184,.24) !important;
+  color: #dbeafe !important;
+}
+
+.country-picker-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  padding: 14px !important;
+  background: rgba(3,10,24,.48) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.country-picker-sheet {
+  width: min(100%, 520px) !important;
+  max-height: min(76dvh, 620px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%) !important;
+  border: 1px solid rgba(18,45,92,.14) !important;
+  box-shadow: 0 28px 90px rgba(10,22,48,.32) !important;
+  color: #0b1736 !important;
+}
+
+.country-picker-handle {
+  width: 46px !important;
+  height: 5px !important;
+  border-radius: 99px !important;
+  background: rgba(100,116,139,.35) !important;
+  margin: 10px auto 4px !important;
+}
+
+.country-picker-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 10px 20px 12px !important;
+}
+
+.country-picker-head h3 {
+  margin: 0 !important;
+  font-size: 1.35rem !important;
+  line-height: 1.1 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.country-picker-close {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(18,45,92,.10) !important;
+  background: #eef5ff !important;
+  color: #0b2f6b !important;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.country-picker-search-wrap {
+  padding: 0 20px 12px !important;
+}
+
+.country-picker-search {
+  width: 100% !important;
+  min-height: 54px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(18,45,92,.12) !important;
+  background: #f7f9ff !important;
+  color: #0b1736 !important;
+  padding: 0 16px !important;
+  font: inherit !important;
+  font-weight: 850 !important;
+  outline: none !important;
+}
+
+.country-picker-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 0 14px 18px !important;
+}
+
+.country-picker-option {
+  width: 100% !important;
+  min-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  background: transparent !important;
+  color: #0b1736 !important;
+  padding: 0 16px !important;
+  font: inherit !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+}
+
+.country-picker-option:active,
+.country-picker-option:hover,
+.country-picker-option:focus-visible {
+  background: #eef5ff !important;
+  outline: none !important;
+}
+
+.country-picker-option b {
+  color: #2563eb !important;
+  font-size: 1.05rem !important;
+}
+
+.country-picker-empty {
+  padding: 18px 16px !important;
+  color: #64748b !important;
+  font-weight: 800 !important;
+}
+
+html.wt-forum-dark .country-picker-sheet,
+html.wt-dark-mode .country-picker-sheet,
+body.wt-dark-mode .country-picker-sheet {
+  background: linear-gradient(180deg, #0b1323 0%, #0f172a 100%) !important;
+  border-color: rgba(148,163,184,.24) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,.50) !important;
+}
+
+html.wt-forum-dark .country-picker-close,
+html.wt-dark-mode .country-picker-close,
+body.wt-dark-mode .country-picker-close,
+html.wt-forum-dark .country-picker-search,
+html.wt-dark-mode .country-picker-search,
+body.wt-dark-mode .country-picker-search {
+  background: rgba(15,23,42,.92) !important;
+  color: #f8fafc !important;
+  border-color: rgba(148,163,184,.24) !important;
+}
+
+html.wt-forum-dark .country-picker-option,
+html.wt-dark-mode .country-picker-option,
+body.wt-dark-mode .country-picker-option {
+  color: #f8fafc !important;
+}
+
+html.wt-forum-dark .country-picker-option:active,
+html.wt-forum-dark .country-picker-option:hover,
+html.wt-forum-dark .country-picker-option:focus-visible,
+html.wt-dark-mode .country-picker-option:active,
+html.wt-dark-mode .country-picker-option:hover,
+html.wt-dark-mode .country-picker-option:focus-visible,
+body.wt-dark-mode .country-picker-option:active,
+body.wt-dark-mode .country-picker-option:hover,
+body.wt-dark-mode .country-picker-option:focus-visible {
+  background: rgba(59,130,246,.18) !important;
 }
