@@ -2331,7 +2331,7 @@
 
     const modal = WT.showModal({
       title: "Perfil público",
-      className: "public-profile-modal wt-profile-final-modal",
+      className: `public-profile-modal wt-profile-final-modal ${isSelfProfile ? "public-profile-self" : "public-profile-other"}`, 
       body: `<section class="public-profile-card">
         <div class="public-profile-hero">
           <div class="public-profile-avatar-wrap">
