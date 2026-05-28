@@ -13,46 +13,11 @@
 
   let lastSessionCheck = 0;
   let sessionRefreshPromise = null;
-  let lastAutoRefreshStart = 0;
-
-  function authErrorLooksExpired(errorLike) {
-    const message = String(errorLike?.message || errorLike || "").toLowerCase();
-    return Boolean(
-      message.includes("jwt") ||
-      message.includes("expired") ||
-      message.includes("refresh") ||
-      message.includes("session") ||
-      message.includes("auth") ||
-      message.includes("invalid token") ||
-      message.includes("not authenticated")
-    );
-  }
-
-  function withTimeout(promise, ms = 7000, label = "operación") {
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} tardó demasiado`)), ms))
-    ]);
-  }
-
-  function startSupabaseAutoRefresh() {
-    if (!client?.auth?.startAutoRefresh) return;
-    const now = Date.now();
-    if (now - lastAutoRefreshStart < 10000) return;
-    lastAutoRefreshStart = now;
-    try { client.auth.startAutoRefresh(); } catch (_) {}
-  }
-
-  function stopSupabaseAutoRefresh() {
-    if (!client?.auth?.stopAutoRefresh) return;
-    try { client.auth.stopAutoRefresh(); } catch (_) {}
-  }
 
   async function ensureSessionFresh({ force = false } = {}) {
     if (!client) return null;
-    startSupabaseAutoRefresh();
     const now = Date.now();
-    if (!force && now - lastSessionCheck < 15000) {
+    if (!force && now - lastSessionCheck < 25000) {
       const { data } = await client.auth.getSession();
       return data?.session || null;
     }
@@ -62,22 +27,22 @@
     sessionRefreshPromise = (async () => {
       try {
         lastSessionCheck = Date.now();
-        const { data, error } = await withTimeout(client.auth.getSession(), 6500, "getSession");
+        const { data, error } = await client.auth.getSession();
         if (error) throw error;
 
         const session = data?.session || null;
         const expiresAt = Number(session?.expires_at || 0) * 1000;
-        const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 5 * 60 * 1000);
+        const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 4 * 60 * 1000);
 
-        if (session && (force || nearExpiry)) {
-          const refreshed = await withTimeout(client.auth.refreshSession(), 6500, "refreshSession");
+        if (session && nearExpiry) {
+          const refreshed = await client.auth.refreshSession();
           if (refreshed?.error) throw refreshed.error;
           return refreshed?.data?.session || session;
         }
 
         return session;
       } catch (error) {
-        console.warn("No se pudo despertar/refrescar la sesión de Supabase:", error);
+        console.warn("No se pudo refrescar la sesión de Supabase:", error);
         return null;
       } finally {
         sessionRefreshPromise = null;
@@ -87,45 +52,36 @@
     return sessionRefreshPromise;
   }
 
-  async function wakeSupabaseSession({ reason = "manual" } = {}) {
-    if (!client) return null;
-    startSupabaseAutoRefresh();
-    const session = await ensureSessionFresh({ force: false });
-    window.dispatchEvent(new CustomEvent("wt:session-wake", { detail: { reason, hasSession: Boolean(session) } }));
-    return session;
-  }
-
   async function runWithSession(action, { retry = true } = {}) {
-    // No bloquea los botones si el navegador/Supabase tarda en despertar.
-    try { await withTimeout(wakeSupabaseSession({ reason: "action" }), 6500, "despertar sesión"); } catch (_) {}
-    try {
-      const result = await action();
-      if (result?.error && retry && authErrorLooksExpired(result.error)) {
-        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
-        return action();
-      }
-      return result;
-    } catch (error) {
-      if (retry && authErrorLooksExpired(error)) {
-        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
-        return action();
-      }
-      throw error;
+    await ensureSessionFresh({ force: false });
+    const result = await action();
+    const message = String(result?.error?.message || result?.error || "").toLowerCase();
+    const expired = result?.error && (
+      message.includes("jwt") ||
+      message.includes("expired") ||
+      message.includes("refresh") ||
+      message.includes("session") ||
+      message.includes("auth")
+    );
+
+    if (expired && retry) {
+      await ensureSessionFresh({ force: true });
+      return action();
     }
+
+    return result;
   }
 
   function bindSessionKeepAlive() {
     if (!client || window.__WT_SESSION_KEEPALIVE_BOUND__) return;
     window.__WT_SESSION_KEEPALIVE_BOUND__ = true;
 
-    const wake = () => wakeSupabaseSession({ reason: "resume" });
+    const refresh = () => ensureSessionFresh({ force: true });
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") wake();
-      else stopSupabaseAutoRefresh();
+      if (document.visibilityState === "visible") refresh();
     });
-    window.addEventListener("pageshow", wake);
-    window.addEventListener("focus", wake);
-    window.addEventListener("online", wake);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
 
     setInterval(() => {
       if (document.visibilityState === "visible") ensureSessionFresh({ force: false });
@@ -804,7 +760,7 @@
   bindSessionKeepAlive();
 
   window.WT = {
-    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, wakeSupabaseSession, getAccessToken, runWithSession, bindSessionKeepAlive,
+    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, getAccessToken, runWithSession, bindSessionKeepAlive,
     escapeHTML, formatDate, parseSettingValue, toast, showModal, confirmDialog,
     renderRoleBadge, renderUserBadges, publicUrl, isSupabaseStorageUrl, sanitizeImageUrl, r2KeyFromUrl, collectImageKeysFromRecord, deleteR2Image, deleteR2ImagesFromRecords, deleteGoogleDrivePdfsFromRecords, dataUrlToBlob, uploadBlob, getImageCompressionSettings, clearImageCompressionSettingsCache, getCurrentUser, getMyProfile, bindCommonUI
   };
