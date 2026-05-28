@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4056: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4047: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4056: primero intenta usar la función RPC inteligente.
+    // V4047: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4056", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4047", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4056: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4047: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -1888,7 +1888,7 @@
 
   function loadExternalScriptOnce(src, attrName = "data-wtrd-script") {
     return new Promise((resolve, reject) => {
-      const escaped = (window.CSS?.escape ? CSS.escape(src) : String(src).replace(/"/g, '\"'));
+      const escaped = (window.CSS?.escape ? CSS.escape(src) : String(src).replace(/"/g, '\\"'));
       const existing = document.querySelector(`script[${attrName}="${escaped}"]`);
       if (existing) {
         if (existing.dataset.loaded === "true") return resolve(existing);
@@ -3645,7 +3645,6 @@
       if (parent) {
         comment.reply_to_author = parent.author || null;
         comment.reply_to_author_name = parent.author?.full_name || "Estudiante";
-        comment.reply_to_author_username = parent.author?.username || "";
         parent.children.push(comment);
       } else {
         roots.push(comment);
@@ -3662,10 +3661,8 @@
 
   function renderReplyTarget(comment, depth = 0) {
     if (!comment.parent_comment_id || depth <= 0) return "";
-    const username = normalizeMentionUsername(comment.reply_to_author_username || comment.reply_to_author?.username || "");
-    const fallbackName = normalizeMentionUsername(comment.reply_to_author_name || comment.reply_to_author?.full_name || "usuario");
-    const label = username || fallbackName || "usuario";
-    return `<span class="ig-reply-prefix">@${WT.escapeHTML(label)}</span>`;
+    const name = comment.reply_to_author_name || comment.reply_to_author?.full_name || "Estudiante";
+    return `<span class="ig-reply-prefix">@${WT.escapeHTML(name)}</span>`;
   }
 
   function canManageForumComments() {
@@ -3788,28 +3785,12 @@
       const pre = await WT.supabase.from("forum_comments").select("id,post_id,author_id,body").eq("id", commentId).maybeSingle();
       targetComment = pre?.data || null;
     } catch (_) {}
-    const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
-      const rpc = await WT.supabase.rpc("approve_forum_comment_v4056", { comment_id: commentId });
-      if (!rpc.error) return rpc;
-      return WT.supabase
-        .from("forum_comments")
-        .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
-        .eq("id", commentId)
-        .select("id,status")
-        .maybeSingle();
-    }) : WT.supabase
+    const { error } = await WT.supabase
       .from("forum_comments")
-      .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
-      .eq("id", commentId)
-      .select("id,status")
-      .maybeSingle());
-    if (approveResult?.error) {
-      WT.toast(approveResult.error.message || "No se pudo aprobar el comentario", "error");
-      return;
-    }
-    const verifyComment = await WT.supabase.from("forum_comments").select("id,status").eq("id", commentId).maybeSingle();
-    if (verifyComment.error || !verifyComment.data || verifyComment.data.status !== "approved") {
-      WT.toast(verifyComment.error?.message || "Supabase no confirmó la aprobación del comentario.", "error");
+      .update({ status: "approved" })
+      .eq("id", commentId);
+    if (error) {
+      WT.toast(error.message || "No se pudo aprobar el comentario", "error");
       return;
     }
     if (targetComment?.author_id) await sendForumPush(targetComment.author_id, { title: "Comentario aprobado", body: "Tu comentario fue aprobado en el foro.", url: `post.html?id=${targetComment.post_id || state.currentPost?.id || ""}`, type: "comment_approved", tag: `comment-approved-${commentId}` });
@@ -3896,30 +3877,12 @@
       const pre = await WT.supabase.from("forum_posts").select("id,title,author_id").eq("id", postId).maybeSingle();
       targetPost = pre?.data || null;
     } catch (_) {}
-    const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
-      const rpc = await WT.supabase.rpc("approve_forum_post_v4056", { post_id: postId });
-      if (!rpc.error) return rpc;
-      const legacy = await WT.supabase.rpc("approve_forum_post", { post_id: postId });
-      if (!legacy.error) return legacy;
-      return WT.supabase
-        .from("forum_posts")
-        .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
-        .eq("id", postId)
-        .select("id,status")
-        .maybeSingle();
-    }) : WT.supabase
+    const { error } = await WT.supabase
       .from("forum_posts")
       .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
-      .eq("id", postId)
-      .select("id,status")
-      .maybeSingle());
-    if (approveResult?.error) {
-      WT.toast(approveResult.error.message || "No se pudo aprobar la publicación", "error");
-      return;
-    }
-    const verifyPost = await WT.supabase.from("forum_posts").select("id,status").eq("id", postId).maybeSingle();
-    if (verifyPost.error || !verifyPost.data || verifyPost.data.status !== "approved") {
-      WT.toast(verifyPost.error?.message || "Supabase no confirmó la aprobación de la publicación.", "error");
+      .eq("id", postId);
+    if (error) {
+      WT.toast(error.message || "No se pudo aprobar la publicación", "error");
       return;
     }
     if (targetPost?.author_id) await sendForumPush(targetPost.author_id, { title: "Publicación aprobada", body: `Tu publicación “${targetPost.title || "del foro"}” fue aprobada.`, url: `post.html?id=${postId}`, type: "post_approved", tag: `post-approved-${postId}` });
@@ -3968,8 +3931,6 @@
     const safeDepth = depth > 0 ? 1 : 0;
     const isLiked = state.likedComments.has(comment.id);
     const authorName = author.full_name || "Estudiante";
-    const authorUsername = normalizeMentionUsername(author.username || "");
-    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const replyPrefix = renderReplyTarget(comment, depth);
     const isPending = String(comment.status || "approved").toLowerCase() === "pending";
@@ -3991,7 +3952,7 @@
         <p class="ig-comment-text">${replyPrefix}${renderMentions(comment.body)}</p>
         ${renderAttachmentGallery(comment, "comment")}
         <div class="ig-comment-actions">
-          <button class="ig-comment-action" data-reply-comment="${WT.escapeHTML(comment.id)}" data-reply-author-id="${WT.escapeHTML(authorId)}" data-reply-username="${WT.escapeHTML(authorUsername)}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
+          <button class="ig-comment-action" data-reply-comment="${comment.id}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
           <button class="ig-comment-action ig-comment-report" data-report-comment="${comment.id}" type="button">Reportar</button>
           ${canManageForumComments() && isPending ? `<button class="ig-comment-action ig-admin-approve" data-approve-comment="${WT.escapeHTML(comment.id)}" type="button">Aprobar</button>` : ""}
           ${canDeleteForumContent(comment, author) ? `<button class="ig-comment-action ig-admin-delete" data-delete-comment="${WT.escapeHTML(comment.id)}" type="button">Eliminar</button>` : ""}
@@ -4057,13 +4018,9 @@
     bindPublicProfileTriggers(root);
   }
 
-  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "", authorId = "", username = "") {
-    const cleanUsername = normalizeMentionUsername(username || "");
+  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "") {
     state.replyingTo = commentId ? {
       id: commentId,
-      parent_comment_id: commentId,
-      author_id: authorId || "",
-      username: cleanUsername,
       authorName,
       body: String(replyBody || "").slice(0, 180),
       avatar: WT.sanitizeImageUrl(replyAvatar || "", "images/placeholder-avatar.png")
@@ -4088,7 +4045,7 @@
       else preview.setAttribute("hidden", "");
     }
     if (previewAvatar) previewAvatar.src = state.replyingTo?.avatar || "images/placeholder-avatar.png";
-    if (previewAuthor) previewAuthor.textContent = state.replyingTo?.username ? `@${normalizeMentionUsername(state.replyingTo.username)}` : (state.replyingTo?.authorName || "");
+    if (previewAuthor) previewAuthor.textContent = state.replyingTo?.authorName || "";
     if (previewText) previewText.textContent = state.replyingTo?.body || "";
     if (composer) composer.classList.toggle("is-replying", !!state.replyingTo);
     if (!state.replyingTo && composer) {
@@ -4104,11 +4061,6 @@
     if (input) {
       input.placeholder = state.replyingTo ? "Escribe tu respuesta..." : "¿Qué opinas sobre esto?";
       if (state.replyingTo) {
-        const replyUsername = normalizeMentionUsername(state.replyingTo.username || "");
-        if (replyUsername && !input.value.trim()) {
-          input.value = `@${replyUsername} `;
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-        }
         try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
         scrollComposerAboveKeyboard();
         setTimeout(syncCommentComposerKeyboard, 60);
@@ -4316,7 +4268,7 @@
         if (text) text.textContent = "";
         if (preview) preview.hidden = false;
         if (previewAvatar) previewAvatar.src = WT.sanitizeImageUrl(draft.replyingTo.avatar || "", "images/placeholder-avatar.png");
-        if (previewAuthor) previewAuthor.textContent = draft.replyingTo.username ? `@${normalizeMentionUsername(draft.replyingTo.username)}` : (draft.replyingTo.authorName || "comentario");
+        if (previewAuthor) previewAuthor.textContent = draft.replyingTo.authorName || "comentario";
         if (previewText) previewText.textContent = draft.replyingTo.body || "Comentario seleccionado";
         if (composer) composer.classList.add("is-replying");
         bodyEl.placeholder = "Escribe tu respuesta...";
@@ -4627,16 +4579,7 @@
       }
 
       const reply = e.target.closest("[data-reply-comment]");
-      if (reply) {
-        setReplyTarget(
-          reply.dataset.replyComment,
-          reply.dataset.replyAuthor || "comentario",
-          reply.dataset.replyBody || "",
-          reply.dataset.replyAvatar || "",
-          reply.dataset.replyAuthorId || "",
-          reply.dataset.replyUsername || ""
-        );
-      }
+      if (reply) setReplyTarget(reply.dataset.replyComment, reply.dataset.replyAuthor || "comentario", reply.dataset.replyBody || "", reply.dataset.replyAvatar || "");
 
       const toggleReplies = e.target.closest("[data-toggle-comment-replies]");
       if (toggleReplies) {
