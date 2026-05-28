@@ -1,4 +1,4 @@
-const WT_CACHE = "wt-guide-rd-v4062-session-logic-rebuild";
+const WT_CACHE = "wt-guide-rd-v4063-session-logic-rebuild";
 self.addEventListener("install", event => { self.skipWaiting(); });
 self.addEventListener("activate", event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== WT_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

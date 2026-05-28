@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4062: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4063: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4062: primero intenta usar la función RPC inteligente.
+    // V4063: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4062", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4063", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4062: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4063: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -3667,7 +3667,10 @@
     const username = normalizeMentionUsername(comment.reply_to_author_username || comment.reply_to_author?.username || "");
     const fallback = normalizeMentionUsername(comment.reply_to_author_name || comment.reply_to_author?.full_name || "");
     const handle = username || fallback;
-    return handle ? `<span class="ig-reply-prefix">@${WT.escapeHTML(handle)}</span>` : "";
+    if (!handle) return "";
+    const bodyStart = String(comment.body || "").trimStart().toLowerCase();
+    if (bodyStart.startsWith(`@${handle.toLowerCase()}`)) return "";
+    return `<span class="ig-reply-prefix">@${WT.escapeHTML(handle)}</span>`;
   }
 
   function canManageForumComments() {
@@ -4097,6 +4100,14 @@
     const body = bodyEl?.value?.trim();
     if (!body) return WT.toast("Escribe una respuesta primero", "warning");
 
+    let bodyToSave = body;
+    const replyUsername = normalizeMentionUsername(state.replyingTo?.username || "");
+    if (state.replyingTo?.id && replyUsername) {
+      const mentionPattern = new RegExp(`^@${replyUsername}\\b\\s*`, "i");
+      bodyToSave = bodyToSave.replace(mentionPattern, "").trimStart();
+      if (!bodyToSave.trim()) return WT.toast("Escribe una respuesta después de la mención.", "warning");
+    }
+
     const myProfile = await WT.getMyProfile();
     const requireApprovalSetting = await WTContent.getPublicSetting("forum_require_approval", true);
     const mediaRequireApprovalSetting = await WTContent.getPublicSetting("forum_media_require_approval", false);
@@ -4116,7 +4127,7 @@
     try {
       await ensureUserCanUseForum(user.id);
       await checkDailyLimit("images_uploaded", (fileInput?.files || []).length ? 1 : 0, Number(getForumLimits().IMAGES_PER_DAY || 20), "imágenes");
-      const violation = detectForumViolation(body);
+      const violation = detectForumViolation(bodyToSave);
       if (violation) {
         await handleForumViolation(user.id, violation, "comment");
         return;
@@ -4152,7 +4163,7 @@
       const status = isForumStaff || !needsApproval ? "approved" : "pending";
       const commentPayload = {
         p_post_id: state.currentPost.id,
-        p_body: body,
+        p_body: bodyToSave,
         p_status: status,
         p_parent_comment_id: state.replyingTo?.id || null,
         p_image_url: firstImage?.url || null,
@@ -4172,7 +4183,7 @@
         if (state.replyingTo?.author_id && String(state.replyingTo.author_id) !== String(user.id)) {
           await sendForumPush(state.replyingTo.author_id, { title: "Nueva respuesta", body: "Alguien respondió tu comentario.", url: `post.html?id=${state.currentPost.id}`, type: "comment_reply", tag: `comment-reply-${state.replyingTo.id}` });
         }
-        await notifyMentionedUsers({ text: body, actorId: user.id, postId: state.currentPost.id, type: "comment" });
+        await notifyMentionedUsers({ text: bodyToSave, actorId: user.id, postId: state.currentPost.id, type: "comment" });
       }
 
       bodyEl.value = "";
