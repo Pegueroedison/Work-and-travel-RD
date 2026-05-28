@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4048: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4049: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4048: primero intenta usar la función RPC inteligente.
+    // V4049: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4047", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4049", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4048: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4049: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -545,8 +545,6 @@
 
   function renderAuthorTrigger(author = {}, { compact = false } = {}) {
     const authorName = author.full_name || "Estudiante";
-    const authorUsername = normalizeMentionUsername(author.username || "");
-    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const badges = WT.renderUserBadges(author.badges || []);
     const payload = authorPayloadAttr(author);
@@ -3148,8 +3146,6 @@
     const body       = post.body || "";
     const excerpt    = renderMentions(body.slice(0, 200)) + (body.length > 200 ? "…" : "");
     const authorName = author.full_name || "Estudiante";
-    const authorUsername = normalizeMentionUsername(author.username || "");
-    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const postImage  = renderAttachmentGallery(post, "post");
     const url        = postUrl(post.id);
