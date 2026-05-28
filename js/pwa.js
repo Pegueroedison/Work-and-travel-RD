@@ -45,49 +45,31 @@
     let checkTimer = null;
     let hiddenAt = 0;
 
-    const hasActiveFileFlow = () => {
-      const text = String(document.body?.textContent || "").toLowerCase();
-      return Boolean(
-        qs(".forum-upload-progress,.image-editor-backdrop,.cropper-modal") ||
-        text.includes("publicando") ||
-        text.includes("subiendo") ||
-        text.includes("procesando") ||
-        text.includes("analizando")
-      );
-    };
-
-    const wakeSupabase = async (reason = "resume") => {
-      if (!window.WT?.supabase || !pagesThatUseDB.test(location.pathname || "/")) return null;
-      if (hasActiveFileFlow()) return null;
+    const wakeSupabaseQuietly = async (reason = "resume") => {
+      if (document.hidden || !window.WT?.supabase || !pagesThatUseDB.test(location.pathname || "/")) return;
       try {
-        if (window.WT?.wakeSupabaseSession) return await window.WT.wakeSupabaseSession({ reason, force: false });
-        if (window.WT?.ensureSessionFresh) return await window.WT.ensureSessionFresh({ force: false, silent: true });
-        const { data } = await window.WT.supabase.auth.getSession();
-        return data?.session || null;
-      } catch (_) {
-        return null;
-      }
+        if (window.WT?.resumeSupabaseSession) await window.WT.resumeSupabaseSession({ reason, force: false });
+        else if (window.WT?.ensureSessionFresh) await window.WT.ensureSessionFresh({ force: false, silent: true });
+        else await window.WT.supabase.auth.getSession();
+        window.dispatchEvent(new CustomEvent("wt:app-resumed", { detail: { reason } }));
+      } catch (_) {}
     };
 
     const scheduleWake = (delay = 700, reason = "resume") => {
-      if (document.hidden) return;
       clearTimeout(checkTimer);
-      checkTimer = setTimeout(() => {
-        wakeSupabase(reason).then(() => window.dispatchEvent(new CustomEvent("wt:app-resumed"))).catch(() => {});
-      }, delay);
+      checkTimer = setTimeout(() => wakeSupabaseQuietly(reason), delay);
     };
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) {
-        hiddenAt = Date.now();
-      } else {
+      if (document.hidden) hiddenAt = Date.now();
+      else {
         const slept = hiddenAt ? Date.now() - hiddenAt : 0;
         scheduleWake(slept > 15000 ? 450 : 900, "visibility");
         hiddenAt = 0;
       }
     });
-    window.addEventListener("pageshow", () => scheduleWake(500, "pageshow"));
-    window.addEventListener("focus", () => scheduleWake(850, "focus"));
+    window.addEventListener("pageshow", e => scheduleWake(e.persisted ? 350 : 650, "pageshow"));
+    window.addEventListener("focus", () => scheduleWake(900, "focus"));
     window.addEventListener("online", () => scheduleWake(350, "online"));
   }
 

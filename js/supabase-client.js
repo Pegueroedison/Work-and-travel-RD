@@ -12,48 +12,35 @@
   }) : null;
 
   let lastSessionCheck = 0;
+  let lastResumeWake = 0;
   let sessionRefreshPromise = null;
-  let lastWakeAt = 0;
 
-  function sessionErrorLooksExpired(errorLike) {
-    const message = String(errorLike?.message || errorLike || "").toLowerCase();
-    return Boolean(
-      message.includes("jwt") ||
-      message.includes("expired") ||
-      message.includes("refresh") ||
-      message.includes("session") ||
-      message.includes("auth") ||
-      message.includes("invalid token") ||
-      message.includes("not authenticated") ||
-      message.includes("permission denied")
-    );
-  }
-
-  function withTimeout(promise, ms = 5500) {
+  function withSessionTimeout(promise, ms = 6500) {
     return Promise.race([
       promise,
       new Promise((_, reject) => setTimeout(() => reject(new Error("session-timeout")), ms))
     ]);
   }
 
-  function isFileFlowActive() {
-    const text = String(document.body?.textContent || "").toLowerCase();
+  function looksLikeSessionError(errorLike) {
+    const message = String(errorLike?.message || errorLike || "").toLowerCase();
     return Boolean(
-      document.querySelector(".forum-upload-progress,.image-editor-backdrop,.cropper-modal") ||
-      text.includes("publicando") ||
-      text.includes("subiendo") ||
-      text.includes("procesando") ||
-      text.includes("analizando")
+      message.includes("jwt") ||
+      message.includes("expired") ||
+      message.includes("refresh") ||
+      message.includes("session") ||
+      message.includes("invalid token") ||
+      message.includes("not authenticated") ||
+      message.includes("auth")
     );
   }
 
   async function ensureSessionFresh({ force = false, silent = false } = {}) {
     if (!client) return null;
     const now = Date.now();
-
-    if (!force && now - lastSessionCheck < 20000) {
+    if (!force && now - lastSessionCheck < 25000) {
       try {
-        const { data } = await withTimeout(client.auth.getSession(), 4500);
+        const { data } = await withSessionTimeout(client.auth.getSession(), 4500);
         return data?.session || null;
       } catch (_) {
         return null;
@@ -66,15 +53,16 @@
       try {
         lastSessionCheck = Date.now();
         try { client.auth.startAutoRefresh?.(); } catch (_) {}
-        const { data, error } = await withTimeout(client.auth.getSession(), 5500);
+
+        const { data, error } = await withSessionTimeout(client.auth.getSession(), 5500);
         if (error) throw error;
 
         const session = data?.session || null;
         const expiresAt = Number(session?.expires_at || 0) * 1000;
-        const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 3 * 60 * 1000);
+        const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 4 * 60 * 1000);
 
         if (session && (force || nearExpiry)) {
-          const refreshed = await withTimeout(client.auth.refreshSession(), 6000);
+          const refreshed = await withSessionTimeout(client.auth.refreshSession(), 6500);
           if (refreshed?.error) throw refreshed.error;
           return refreshed?.data?.session || session;
         }
@@ -91,32 +79,31 @@
     return sessionRefreshPromise;
   }
 
-  async function wakeSupabaseSession({ reason = "resume", force = false } = {}) {
+  async function resumeSupabaseSession({ reason = "resume", force = false } = {}) {
     if (!client) return null;
     const now = Date.now();
-    if (!force && now - lastWakeAt < 8000) return null;
-    lastWakeAt = now;
+    if (!force && now - lastResumeWake < 10000) return null;
+    lastResumeWake = now;
     try { client.auth.startAutoRefresh?.(); } catch (_) {}
     const session = await ensureSessionFresh({ force, silent: true });
-    window.dispatchEvent(new CustomEvent("wt:session-wake", { detail: { reason, hasSession: Boolean(session) } }));
+    window.dispatchEvent(new CustomEvent("wt:session-resume", { detail: { reason, hasSession: Boolean(session) } }));
     return session;
   }
 
   async function runWithSession(action, { retry = true } = {}) {
-    // No fuerza refresh antes de cada acción para no romper file picker, PDF o subidas.
-    // Solo reintenta si Supabase devuelve un error real de JWT/sesión.
+    await ensureSessionFresh({ force: false, silent: true });
     let result;
     try {
       result = await action();
     } catch (error) {
-      if (retry && sessionErrorLooksExpired(error)) {
+      if (retry && looksLikeSessionError(error)) {
         await ensureSessionFresh({ force: true, silent: true });
         return action();
       }
       throw error;
     }
 
-    if (result?.error && retry && sessionErrorLooksExpired(result.error)) {
+    if (result?.error && retry && looksLikeSessionError(result.error)) {
       await ensureSessionFresh({ force: true, silent: true });
       return action();
     }
@@ -128,26 +115,24 @@
     if (!client || window.__WT_SESSION_KEEPALIVE_BOUND__) return;
     window.__WT_SESSION_KEEPALIVE_BOUND__ = true;
 
-    const scheduleWake = (reason, delay = 650) => {
-      window.clearTimeout(window.__WT_SESSION_WAKE_TIMER__);
-      window.__WT_SESSION_WAKE_TIMER__ = window.setTimeout(() => {
+    let wakeTimer = null;
+    const scheduleResume = (reason = "resume", delay = 600) => {
+      clearTimeout(wakeTimer);
+      wakeTimer = setTimeout(() => {
         if (document.visibilityState !== "visible") return;
-        if (isFileFlowActive()) return;
-        wakeSupabaseSession({ reason, force: false }).catch(() => {});
+        resumeSupabaseSession({ reason, force: false }).catch(() => {});
       }, delay);
     };
 
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") scheduleWake("visibility", 750);
+      if (document.visibilityState === "visible") scheduleResume("visibility", 550);
     });
-    window.addEventListener("pageshow", () => scheduleWake("pageshow", 650));
-    window.addEventListener("focus", () => scheduleWake("focus", 900));
-    window.addEventListener("online", () => scheduleWake("online", 500));
+    window.addEventListener("pageshow", () => scheduleResume("pageshow", 450));
+    window.addEventListener("focus", () => scheduleResume("focus", 700));
+    window.addEventListener("online", () => scheduleResume("online", 350));
 
     setInterval(() => {
-      if (document.visibilityState === "visible" && !isFileFlowActive()) {
-        ensureSessionFresh({ force: false, silent: true }).catch(() => {});
-      }
+      if (document.visibilityState === "visible") ensureSessionFresh({ force: false, silent: true }).catch(() => {});
     }, 120000);
   }
 
@@ -823,7 +808,7 @@
   bindSessionKeepAlive();
 
   window.WT = {
-    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, wakeSupabaseSession, getAccessToken, runWithSession, bindSessionKeepAlive,
+    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, resumeSupabaseSession, getAccessToken, runWithSession, bindSessionKeepAlive,
     escapeHTML, formatDate, parseSettingValue, toast, showModal, confirmDialog,
     renderRoleBadge, renderUserBadges, publicUrl, isSupabaseStorageUrl, sanitizeImageUrl, r2KeyFromUrl, collectImageKeysFromRecord, deleteR2Image, deleteR2ImagesFromRecords, deleteGoogleDrivePdfsFromRecords, dataUrlToBlob, uploadBlob, getImageCompressionSettings, clearImageCompressionSettingsCache, getCurrentUser, getMyProfile, bindCommonUI
   };
