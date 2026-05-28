@@ -293,15 +293,40 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      const { data, error } = await WT.supabase
+      // V4045: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
+      // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
+      const { data: rows, error } = await WT.supabase
         .from("user_friendships")
-        .select("id, requester_id, receiver_id, status, requester:requester_id(id,username,full_name,photo_url,role), receiver:receiver_id(id,username,full_name,photo_url,role)")
+        .select("id,requester_id,receiver_id,status,accepted_at,updated_at,created_at")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order("accepted_at", { ascending: false })
-        .limit(12);
+        .limit(24);
       if (error) throw error;
-      return (data || []).map(row => String(row.requester_id) === String(user.id) ? row.receiver : row.requester).filter(p => p?.username);
+
+      const friendIds = [];
+      const seenIds = new Set();
+      (rows || []).forEach(row => {
+        const friendId = String(row.requester_id) === String(user.id) ? row.receiver_id : row.requester_id;
+        if (!friendId || seenIds.has(String(friendId))) return;
+        seenIds.add(String(friendId));
+        friendIds.push(friendId);
+      });
+
+      if (!friendIds.length) return [];
+
+      const { data: profiles, error: profileError } = await WT.supabase
+        .from("public_profiles")
+        .select("id,username,full_name,photo_url,role")
+        .in("id", friendIds)
+        .not("username", "is", null);
+      if (profileError) throw profileError;
+
+      const order = new Map(friendIds.map((id, index) => [String(id), index]));
+      return (profiles || [])
+        .filter(p => p?.username)
+        .sort((a, b) => (order.get(String(a.id)) ?? 999) - (order.get(String(b.id)) ?? 999));
     } catch (error) {
       console.warn("No se pudieron cargar amigos para menciones", error);
       return [];
@@ -327,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4043: primero intenta usar la función RPC inteligente.
+    // V4045: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4043", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4045", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -338,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4043: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4045: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -407,7 +432,7 @@
       mentioned_you: "Te mencionó",
       you_mentioned: "Lo mencionaste",
       search: "Búsqueda",
-      admin_search: "Admin"
+      admin_search: "Búsqueda"
     };
     return labels[String(reason || "").trim()] || "";
   }

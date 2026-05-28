@@ -847,7 +847,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .btn-primary,
 }
 
 /* ==========================================================
-   V4043 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
+   V4045 - PERFIL PUBLICO RESPETA EL TEMA DEL FORO
    El modal publico NO queda oscuro por defecto: solo se oscurece
    cuando el foro esta en modo oscuro (.wt-forum-dark).
    ========================================================== */
@@ -995,7 +995,7 @@ html.wt-forum-dark .modal-card.wt-profile-final-modal .modal-close {
 }
 
 /* ==========================================================
-   V4043 - Perfil público: scroll real, cerrar visible y layout estable
+   V4045 - Perfil público: scroll real, cerrar visible y layout estable
    ========================================================== */
 body .modal-backdrop .modal-card.public-profile-modal,
 body .modal-backdrop .modal-card.wt-profile-final-modal,
@@ -1108,7 +1108,7 @@ body .modal-backdrop .modal-card.wt-profile-final-modal .public-profile-friend-b
 }
 
 /* ==========================================================
-   V4043 - PERFIL PUBLICO AJUSTADO PARA QUE TODO ENCAJE BIEN
+   V4045 - PERFIL PUBLICO AJUSTADO PARA QUE TODO ENCAJE BIEN
    - evita que las chips choquen con el botón Cerrar
    - mejora el scroll real en iPhone/Android
    - reduce el alto visual del bloque para que entre mejor
