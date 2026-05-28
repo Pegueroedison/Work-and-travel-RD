@@ -1,4 +1,4 @@
-const WT_CACHE = "wt-guide-rd-v4049-session-stability-no-reload";
+const WT_CACHE = "wt-guide-rd-v4050-session-stability-no-reload";
 self.addEventListener("install", event => { self.skipWaiting(); });
 self.addEventListener("activate", event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== WT_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
