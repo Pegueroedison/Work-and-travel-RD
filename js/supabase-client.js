@@ -13,11 +13,39 @@
 
   let lastSessionCheck = 0;
   let sessionRefreshPromise = null;
+  let lastAutoRefreshStart = 0;
+
+  function authErrorLooksExpired(errorLike) {
+    const message = String(errorLike?.message || errorLike || "").toLowerCase();
+    return Boolean(
+      message.includes("jwt") ||
+      message.includes("expired") ||
+      message.includes("refresh") ||
+      message.includes("session") ||
+      message.includes("auth") ||
+      message.includes("invalid token") ||
+      message.includes("not authenticated")
+    );
+  }
+
+  function startSupabaseAutoRefresh() {
+    if (!client?.auth?.startAutoRefresh) return;
+    const now = Date.now();
+    if (now - lastAutoRefreshStart < 10000) return;
+    lastAutoRefreshStart = now;
+    try { client.auth.startAutoRefresh(); } catch (_) {}
+  }
+
+  function stopSupabaseAutoRefresh() {
+    if (!client?.auth?.stopAutoRefresh) return;
+    try { client.auth.stopAutoRefresh(); } catch (_) {}
+  }
 
   async function ensureSessionFresh({ force = false } = {}) {
     if (!client) return null;
+    startSupabaseAutoRefresh();
     const now = Date.now();
-    if (!force && now - lastSessionCheck < 25000) {
+    if (!force && now - lastSessionCheck < 15000) {
       const { data } = await client.auth.getSession();
       return data?.session || null;
     }
@@ -32,9 +60,9 @@
 
         const session = data?.session || null;
         const expiresAt = Number(session?.expires_at || 0) * 1000;
-        const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 4 * 60 * 1000);
+        const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 5 * 60 * 1000);
 
-        if (session && nearExpiry) {
+        if (session && (force || nearExpiry)) {
           const refreshed = await client.auth.refreshSession();
           if (refreshed?.error) throw refreshed.error;
           return refreshed?.data?.session || session;
@@ -42,7 +70,7 @@
 
         return session;
       } catch (error) {
-        console.warn("No se pudo refrescar la sesión de Supabase:", error);
+        console.warn("No se pudo despertar/refrescar la sesión de Supabase:", error);
         return null;
       } finally {
         sessionRefreshPromise = null;
@@ -52,36 +80,44 @@
     return sessionRefreshPromise;
   }
 
+  async function wakeSupabaseSession({ reason = "manual" } = {}) {
+    if (!client) return null;
+    startSupabaseAutoRefresh();
+    const session = await ensureSessionFresh({ force: false });
+    window.dispatchEvent(new CustomEvent("wt:session-wake", { detail: { reason, hasSession: Boolean(session) } }));
+    return session;
+  }
+
   async function runWithSession(action, { retry = true } = {}) {
-    await ensureSessionFresh({ force: false });
-    const result = await action();
-    const message = String(result?.error?.message || result?.error || "").toLowerCase();
-    const expired = result?.error && (
-      message.includes("jwt") ||
-      message.includes("expired") ||
-      message.includes("refresh") ||
-      message.includes("session") ||
-      message.includes("auth")
-    );
-
-    if (expired && retry) {
-      await ensureSessionFresh({ force: true });
-      return action();
+    await wakeSupabaseSession({ reason: "action" });
+    try {
+      const result = await action();
+      if (result?.error && retry && authErrorLooksExpired(result.error)) {
+        await ensureSessionFresh({ force: true });
+        return action();
+      }
+      return result;
+    } catch (error) {
+      if (retry && authErrorLooksExpired(error)) {
+        await ensureSessionFresh({ force: true });
+        return action();
+      }
+      throw error;
     }
-
-    return result;
   }
 
   function bindSessionKeepAlive() {
     if (!client || window.__WT_SESSION_KEEPALIVE_BOUND__) return;
     window.__WT_SESSION_KEEPALIVE_BOUND__ = true;
 
-    const refresh = () => ensureSessionFresh({ force: true });
+    const wake = () => wakeSupabaseSession({ reason: "resume" });
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") refresh();
+      if (document.visibilityState === "visible") wake();
+      else stopSupabaseAutoRefresh();
     });
-    window.addEventListener("focus", refresh);
-    window.addEventListener("online", refresh);
+    window.addEventListener("pageshow", wake);
+    window.addEventListener("focus", wake);
+    window.addEventListener("online", wake);
 
     setInterval(() => {
       if (document.visibilityState === "visible") ensureSessionFresh({ force: false });
@@ -760,7 +796,7 @@
   bindSessionKeepAlive();
 
   window.WT = {
-    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, getAccessToken, runWithSession, bindSessionKeepAlive,
+    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, wakeSupabaseSession, getAccessToken, runWithSession, bindSessionKeepAlive,
     escapeHTML, formatDate, parseSettingValue, toast, showModal, confirmDialog,
     renderRoleBadge, renderUserBadges, publicUrl, isSupabaseStorageUrl, sanitizeImageUrl, r2KeyFromUrl, collectImageKeysFromRecord, deleteR2Image, deleteR2ImagesFromRecords, deleteGoogleDrivePdfsFromRecords, dataUrlToBlob, uploadBlob, getImageCompressionSettings, clearImageCompressionSettingsCache, getCurrentUser, getMyProfile, bindCommonUI
   };

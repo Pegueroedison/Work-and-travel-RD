@@ -2428,7 +2428,7 @@
           renderLoggedOutAuthUI();
           return;
         }
-        await WT.ensureSessionFresh?.({ force: true });
+        await WT.wakeSupabaseSession?.({ reason: "auth-resume" });
         await refreshAuthUI();
       };
       document.addEventListener("visibilitychange", () => {

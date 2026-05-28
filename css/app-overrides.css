@@ -15474,7 +15474,7 @@ html.wt-forum-dark .comment-reply-context{
 
 
 /* ==========================================================
-   V4045 - Menciones inteligentes: motivo del resultado
+   V4046 - Menciones inteligentes: motivo del resultado
    ========================================================== */
 .forum-mention-option-text small {
   display: flex !important;
@@ -15520,7 +15520,7 @@ body.wt-dark-mode .forum-mention-option-text small em {
 }
 
 /* ==========================================================
-   V4045 - Menciones: etiquetas claras, no mostrar "Admin" como motivo
+   V4046 - Menciones: etiquetas claras, no mostrar "Admin" como motivo
    ========================================================== */
 .forum-mention-option-text small em {
   max-width: 150px !important;
