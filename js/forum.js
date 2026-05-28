@@ -317,9 +317,37 @@
     const role = String(currentProfile?.role || "user").toLowerCase();
     const canSearchBroad = ["owner", "superadmin", "admin"].includes(role);
 
-    // Admin/superadmin/owner:
-    // - Solo "@" muestra una lista amplia limitada.
-    // - Con letras busca más ampliamente.
+    const normalizeCandidate = (user = {}) => ({
+      id: user.id,
+      username: user.username,
+      full_name: user.full_name,
+      photo_url: user.photo_url,
+      role: user.role,
+      score: Number(user.score || 0),
+      reason: String(user.reason || "").trim()
+    });
+
+    // V4043: primero intenta usar la función RPC inteligente.
+    // Si el SQL todavía no está instalado, cae al comportamiento anterior.
+    try {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4043", {
+        search_text: query,
+        result_limit: canSearchBroad ? (query ? 20 : 30) : 10
+      });
+      if (error) throw error;
+      const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
+      if (candidates.length) return candidates;
+
+      // V4043: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
+      // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
+      if (canSearchBroad && !query) return [];
+    } catch (error) {
+      console.warn("RPC de menciones inteligentes no disponible; usando búsqueda local.", error);
+    }
+
+    // Fallback anterior/mejorado: mantiene la privacidad si el SQL no está listo
+    // o si la RPC no encuentra relaciones para ese usuario.
     if (canSearchBroad) {
       try {
         let request = WT.supabase
@@ -333,18 +361,14 @@
 
         const { data, error } = await request;
         if (error) throw error;
-        return (data || []).filter(u => u?.username);
+        return (data || []).filter(u => u?.username).map(u => ({ ...u, reason: query ? "search" : "admin_search" }));
       } catch (error) {
         console.warn("No se pudieron buscar usuarios para mencionar", error);
         return [];
       }
     }
 
-    // Usuario normal:
-    // - Solo "@" no muestra todos los usuarios. Muestra amigos.
-    // - Con 1 letra sigue mostrando amigos filtrados.
-    // - Con 2+ letras busca usuarios públicos con límite.
-    const friends = await getMentionFriendSuggestions();
+    const friends = (await getMentionFriendSuggestions()).map(u => ({ ...u, reason: "friend", score: 100 }));
     if (!query) return friends.slice(0, 12);
 
     const friendMatches = friends.filter(u => String(u.username || "").toLowerCase().startsWith(query));
@@ -360,7 +384,7 @@
         .limit(10);
       if (error) throw error;
 
-      const merged = [...friendMatches, ...(data || [])].filter(u => u?.username);
+      const merged = [...friendMatches, ...(data || []).map(u => ({ ...u, reason: "search", score: 10 }))].filter(u => u?.username);
       const seen = new Set();
       return merged.filter(u => {
         const key = String(u.id || u.username);
@@ -373,6 +397,21 @@
       return friendMatches.slice(0, 10);
     }
   }
+
+  function mentionReasonLabel(reason = "") {
+    const labels = {
+      friend: "Amigo",
+      commented_your_post: "Comentó tu publicación",
+      you_replied: "Le respondiste",
+      interaction: "Interacción",
+      mentioned_you: "Te mencionó",
+      you_mentioned: "Lo mencionaste",
+      search: "Búsqueda",
+      admin_search: "Admin"
+    };
+    return labels[String(reason || "").trim()] || "";
+  }
+
 
   function insertMention(textarea, username, range) {
     if (!textarea || !username || !range) return;
@@ -401,12 +440,17 @@
       const avatar = WT.escapeHTML(WT.sanitizeImageUrl(user.photo_url, "images/placeholder-avatar.png"));
       const name = WT.escapeHTML(user.full_name || user.username || "Usuario");
       const username = WT.escapeHTML(user.username || "");
+      const reason = mentionReasonLabel(user.reason);
       return `<button type="button" class="forum-mention-option" data-mention-pick="${username}" data-mention-start="${range.start}" data-mention-end="${range.end}">
         <img src="${avatar}" alt="">
-        <span><b>${name}</b><small>@${username}</small></span>
+        <span class="forum-mention-option-text">
+          <b>${name}</b>
+          <small><span>@${username}</span>${reason ? `<em>${WT.escapeHTML(reason)}</em>` : ""}</small>
+        </span>
       </button>`;
     }).join("") : `<div class="forum-mention-empty">No tienes amigos para sugerir. Escribe 2 letras para buscar.</div>`;
   }
+
 
   function bindMentionAutocomplete(textarea) {
     if (!textarea || textarea.dataset.mentionsBound === "1") return;

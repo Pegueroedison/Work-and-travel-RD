@@ -15471,3 +15471,50 @@ html.wt-forum-dark .comment-reply-context{
 @keyframes wtProgressOut{
   to{opacity:0;transform:translateY(8px);pointer-events:none;}
 }
+
+
+/* ==========================================================
+   V4043 - Menciones inteligentes: motivo del resultado
+   ========================================================== */
+.forum-mention-option-text small {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-width: 0 !important;
+}
+
+.forum-mention-option-text small > span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.forum-mention-option-text small em {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  max-width: 140px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(11,47,107,.08) !important;
+  color: #0b2f6b !important;
+  font-style: normal !important;
+  font-size: 11px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+}
+
+html.wt-forum-dark .forum-mention-option-text small em,
+html.wt-dark-mode .forum-mention-option-text small em,
+body.wt-dark-mode .forum-mention-option-text small em {
+  background: rgba(147,197,253,.14) !important;
+  color: #bfdbfe !important;
+}
+
+@media (max-width: 420px) {
+  .forum-mention-option-text small em {
+    max-width: 104px !important;
+    font-size: 10.5px !important;
+  }
+}
