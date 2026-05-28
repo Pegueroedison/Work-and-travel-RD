@@ -42,35 +42,52 @@
   function hasUnsavedUserInput() { return qsa("textarea,input[type='text'],input[type='email'],input:not([type])").some(el => !el.disabled && String(el.value || "").trim().length > 0 && el.offsetParent !== null); }
   function installAppResumeRecovery() {
     const pagesThatUseDB = /(?:index|foro|post|admin|servicios|servicio|cursos|curso|practica-consular)\.html$|\/$/i;
-    let checkTimer = null;
     let hiddenAt = 0;
+    let checkTimer = null;
 
-    const wakeSupabaseQuietly = async (reason = "resume") => {
+    const isBusyWithFilesOrPosting = () => {
+      try {
+        const txt = document.body?.innerText || "";
+        return Boolean(
+          document.body?.classList?.contains("wt-file-flow-active") ||
+          document.body?.classList?.contains("wt-publishing-active") ||
+          qs(".image-editor-backdrop,.cropper-modal,.forum-upload-progress,.pdf-upload-progress,.forum-pdf-preview") ||
+          /publicando|subiendo|procesando|analizando|preparando/i.test(txt)
+        );
+      } catch (_) {
+        return false;
+      }
+    };
+
+    const wakeSession = async (reason = "resume") => {
       if (document.hidden || !window.WT?.supabase || !pagesThatUseDB.test(location.pathname || "/")) return;
+      if (isBusyWithFilesOrPosting()) return;
       try {
         if (window.WT?.resumeSupabaseSession) await window.WT.resumeSupabaseSession({ reason, force: false });
-        else if (window.WT?.ensureSessionFresh) await window.WT.ensureSessionFresh({ force: false, silent: true });
+        else if (window.WT?.ensureSessionFresh) await window.WT.ensureSessionFresh({ force: true, silent: true });
         else await window.WT.supabase.auth.getSession();
         window.dispatchEvent(new CustomEvent("wt:app-resumed", { detail: { reason } }));
       } catch (_) {}
     };
 
-    const scheduleWake = (delay = 700, reason = "resume") => {
+    const scheduleWake = (reason = "resume", delay = 750) => {
       clearTimeout(checkTimer);
-      checkTimer = setTimeout(() => wakeSupabaseQuietly(reason), delay);
+      checkTimer = setTimeout(() => wakeSession(reason), delay);
     };
 
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) hiddenAt = Date.now();
-      else {
-        const slept = hiddenAt ? Date.now() - hiddenAt : 0;
-        scheduleWake(slept > 15000 ? 450 : 900, "visibility");
-        hiddenAt = 0;
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        try { window.WT?.markSessionStale?.(); } catch (_) {}
+        return;
       }
+      const slept = hiddenAt ? Date.now() - hiddenAt : 0;
+      scheduleWake("visibility", slept > 12000 ? 450 : 850);
+      hiddenAt = 0;
     });
-    window.addEventListener("pageshow", e => scheduleWake(e.persisted ? 350 : 650, "pageshow"));
-    window.addEventListener("focus", () => scheduleWake(900, "focus"));
-    window.addEventListener("online", () => scheduleWake(350, "online"));
+    window.addEventListener("pageshow", e => scheduleWake("pageshow", e.persisted ? 350 : 650));
+    window.addEventListener("focus", () => scheduleWake("focus", 900));
+    window.addEventListener("online", () => scheduleWake("online", 350));
   }
 
   function installFreezeProtection() {
