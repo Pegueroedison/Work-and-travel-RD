@@ -1,4 +1,4 @@
-const WT_CACHE = "wt-guide-rd-v4035-limpieza-parches";
+const WT_CACHE = "wt-guide-rd-v4036-username-profile-fix";
 self.addEventListener("install", event => { self.skipWaiting(); });
 self.addEventListener("activate", event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== WT_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

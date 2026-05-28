@@ -267,3 +267,123 @@ body.wt-dark-mode .modal-card input:-webkit-autofill:focus {
     gap: 14px !important;
   }
 }
+
+/* ==========================================================
+   V4036 - Mi perfil: @usuario en un solo campo y legible
+   Corrige el doble rectángulo causado por estilos globales .input.
+   ========================================================== */
+body .modal-backdrop .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+html.wt-forum-dark body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+html.wt-dark-mode body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+html[data-theme="dark"] body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final {
+  width: 100% !important;
+  min-height: 54px !important;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+body .modal-backdrop .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final {
+  background: rgba(246,248,252,.94) !important;
+  border: 1px solid rgba(200,212,230,.78) !important;
+}
+
+html.wt-forum-dark body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+html.wt-dark-mode body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+html[data-theme="dark"] body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final,
+body.wt-dark-mode .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final {
+  background: rgba(15,23,42,.78) !important;
+  border: 1px solid rgba(148,163,184,.28) !important;
+}
+
+body .modal-backdrop .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+html.wt-forum-dark body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+html.wt-dark-mode body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+html[data-theme="dark"] body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at {
+  width: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  min-height: 54px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: 19px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  flex: 0 0 46px !important;
+}
+
+body .modal-backdrop .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at {
+  color: #0b2f6b !important;
+  -webkit-text-fill-color: #0b2f6b !important;
+}
+
+html.wt-forum-dark body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+html.wt-dark-mode body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+html[data-theme="dark"] body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at,
+body.wt-dark-mode .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > .username-at {
+  color: #93c5fd !important;
+  -webkit-text-fill-color: #93c5fd !important;
+}
+
+body .modal-backdrop .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+html.wt-forum-dark body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+html.wt-dark-mode body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+html[data-theme="dark"] body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input {
+  flex: 1 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 54px !important;
+  height: auto !important;
+  display: block !important;
+  padding: 0 16px 0 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  line-height: 54px !important;
+}
+
+body .modal-backdrop .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input {
+  color: #07152c !important;
+  -webkit-text-fill-color: #07152c !important;
+  caret-color: #0b2f6b !important;
+}
+
+html.wt-forum-dark body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+html.wt-dark-mode body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+html[data-theme="dark"] body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input,
+body.wt-dark-mode .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final > input.input {
+  color: #f8fbff !important;
+  -webkit-text-fill-color: #f8fbff !important;
+  caret-color: #93c5fd !important;
+}
+
+body .profile-settings-modal.account-settings-modal .settings-field.username-field .username-input-wrap.wt-username-final:focus-within {
+  border-color: rgba(37,99,235,.48) !important;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.12) !important;
+}
