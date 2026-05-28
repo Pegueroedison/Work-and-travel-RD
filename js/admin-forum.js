@@ -255,14 +255,69 @@
   }
 
   async function approvePost(id) {
-    const { error } = await WT.supabase.from("forum_posts").update({ status: "approved" }).eq("id", id);
-    if (error) return WT.toast(error.message, "error");
-    await WTAdminContent.log("aprobar_publicacion", "forum_posts", id); WT.toast("Publicación aprobada", "success"); loadForumItems();
+    if (!id) return;
+    const btn = document.querySelector(`[data-approve-post="${CSS.escape(String(id))}"]`);
+    const oldText = btn?.textContent || "Aprobar";
+    if (btn) { btn.disabled = true; btn.textContent = "Aprobando..."; }
+    try {
+      const result = await WTAdminContent.adminQuery(async () => {
+        const rpc = await WT.supabase.rpc("approve_forum_post_v4055", { post_id: id });
+        if (!rpc.error) return rpc;
+        const legacy = await WT.supabase.rpc("approve_forum_post", { post_id: id });
+        if (!legacy.error) return legacy;
+        return WT.supabase
+          .from("forum_posts")
+          .update({ status: "approved", approved_by: currentProfile?.id || null, approved_at: new Date().toISOString() })
+          .eq("id", id)
+          .select("id,status")
+          .maybeSingle();
+      });
+      if (result?.error) throw result.error;
+
+      const verify = await WT.supabase.from("forum_posts").select("id,status").eq("id", id).maybeSingle();
+      if (verify.error) throw verify.error;
+      if (!verify.data || verify.data.status !== "approved") throw new Error("Supabase no confirmó la aprobación de la publicación.");
+
+      await WTAdminContent.log("aprobar_publicacion", "forum_posts", id);
+      WT.toast("Publicación aprobada", "success");
+      await loadForumItems();
+    } catch (error) {
+      WT.toast(error.message || "No se pudo aprobar la publicación", "error");
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = oldText; }
+    }
   }
+
   async function approveComment(id) {
-    const { error } = await WT.supabase.from("forum_comments").update({ status: "approved" }).eq("id", id);
-    if (error) return WT.toast(error.message, "error");
-    await WTAdminContent.log("aprobar_comentario", "forum_comments", id); WT.toast("Comentario aprobado", "success"); loadForumItems();
+    if (!id) return;
+    const btn = document.querySelector(`[data-approve-comment="${CSS.escape(String(id))}"]`);
+    const oldText = btn?.textContent || "Aprobar";
+    if (btn) { btn.disabled = true; btn.textContent = "Aprobando..."; }
+    try {
+      const result = await WTAdminContent.adminQuery(async () => {
+        const rpc = await WT.supabase.rpc("approve_forum_comment_v4055", { comment_id: id });
+        if (!rpc.error) return rpc;
+        return WT.supabase
+          .from("forum_comments")
+          .update({ status: "approved", approved_by: currentProfile?.id || null, approved_at: new Date().toISOString() })
+          .eq("id", id)
+          .select("id,status")
+          .maybeSingle();
+      });
+      if (result?.error) throw result.error;
+
+      const verify = await WT.supabase.from("forum_comments").select("id,status").eq("id", id).maybeSingle();
+      if (verify.error) throw verify.error;
+      if (!verify.data || verify.data.status !== "approved") throw new Error("Supabase no confirmó la aprobación del comentario.");
+
+      await WTAdminContent.log("aprobar_comentario", "forum_comments", id);
+      WT.toast("Comentario aprobado", "success");
+      await loadForumItems();
+    } catch (error) {
+      WT.toast(error.message || "No se pudo aprobar el comentario", "error");
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = oldText; }
+    }
   }
   async function deletePost(id) {
     const { data: item, error: readError } = await WT.supabase.from("forum_posts").select(MEDIA_COLUMNS).eq("id", id).maybeSingle();

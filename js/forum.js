@@ -293,15 +293,40 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      const { data, error } = await WT.supabase
+      // V4055: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
+      // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
+      const { data: rows, error } = await WT.supabase
         .from("user_friendships")
-        .select("id, requester_id, receiver_id, status, requester:requester_id(id,username,full_name,photo_url,role), receiver:receiver_id(id,username,full_name,photo_url,role)")
+        .select("id,requester_id,receiver_id,status,accepted_at,updated_at,created_at")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order("accepted_at", { ascending: false })
-        .limit(12);
+        .limit(24);
       if (error) throw error;
-      return (data || []).map(row => String(row.requester_id) === String(user.id) ? row.receiver : row.requester).filter(p => p?.username);
+
+      const friendIds = [];
+      const seenIds = new Set();
+      (rows || []).forEach(row => {
+        const friendId = String(row.requester_id) === String(user.id) ? row.receiver_id : row.requester_id;
+        if (!friendId || seenIds.has(String(friendId))) return;
+        seenIds.add(String(friendId));
+        friendIds.push(friendId);
+      });
+
+      if (!friendIds.length) return [];
+
+      const { data: profiles, error: profileError } = await WT.supabase
+        .from("public_profiles")
+        .select("id,username,full_name,photo_url,role")
+        .in("id", friendIds)
+        .not("username", "is", null);
+      if (profileError) throw profileError;
+
+      const order = new Map(friendIds.map((id, index) => [String(id), index]));
+      return (profiles || [])
+        .filter(p => p?.username)
+        .sort((a, b) => (order.get(String(a.id)) ?? 999) - (order.get(String(b.id)) ?? 999));
     } catch (error) {
       console.warn("No se pudieron cargar amigos para menciones", error);
       return [];
@@ -327,23 +352,27 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4042: primero intenta usar la función RPC inteligente.
+    // V4055: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4042", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4055", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
       if (error) throw error;
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
-      if (candidates.length || query.length >= 2 || canSearchBroad) return candidates;
-      // Si el usuario normal solo escribió @ y la RPC no encontró relaciones, mostramos vacío.
-      return [];
+      if (candidates.length) return candidates;
+
+      // V4055: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
+      // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
+      if (canSearchBroad && !query) return [];
     } catch (error) {
       console.warn("RPC de menciones inteligentes no disponible; usando búsqueda local.", error);
     }
 
-    // Fallback anterior: mantiene la privacidad si el SQL no se ejecutó.
+    // Fallback anterior/mejorado: mantiene la privacidad si el SQL no está listo
+    // o si la RPC no encuentra relaciones para ese usuario.
     if (canSearchBroad) {
       try {
         let request = WT.supabase
@@ -403,7 +432,7 @@
       mentioned_you: "Te mencionó",
       you_mentioned: "Lo mencionaste",
       search: "Búsqueda",
-      admin_search: "Admin"
+      admin_search: "Búsqueda"
     };
     return labels[String(reason || "").trim()] || "";
   }
@@ -1859,7 +1888,7 @@
 
   function loadExternalScriptOnce(src, attrName = "data-wtrd-script") {
     return new Promise((resolve, reject) => {
-      const escaped = (window.CSS?.escape ? CSS.escape(src) : String(src).replace(/"/g, '\\"'));
+      const escaped = (window.CSS?.escape ? CSS.escape(src) : String(src).replace(/"/g, '\"'));
       const existing = document.querySelector(`script[${attrName}="${escaped}"]`);
       if (existing) {
         if (existing.dataset.loaded === "true") return resolve(existing);
@@ -2320,6 +2349,41 @@
 
 
 
+  function getPdfTimeouts() {
+    const cfg = getPdfConfig();
+    return {
+      localRead: Number(cfg.LOCAL_READ_TIMEOUT_MS || 12000),
+      pageRead: Number(cfg.PAGE_READ_TIMEOUT_MS || 2500),
+      imageScan: Number(cfg.IMAGE_SCAN_TIMEOUT_MS || 1200),
+      base64: Number(cfg.BASE64_TIMEOUT_MS || 15000),
+      upload: Number(cfg.UPLOAD_TIMEOUT_MS || 90000),
+      analysis: Number(cfg.AI_SUMMARY_TIMEOUT_MS || 9000)
+    };
+  }
+
+  function pdfTimeoutResult(message = "El PDF tardó demasiado en analizarse. Requiere revisión manual.") {
+    return { text: "", hasImages: false, pages: 0, readablePages: 0, error: message, timedOut: true };
+  }
+
+  function makePendingPdfAnalysis(message = "Resumen pendiente. El PDF se publicó, pero el análisis no se completó a tiempo.") {
+    const pending = emptyPdfAnalysis("pending");
+    pending.message = message;
+    return { analysis_status: "pending", analysis: pending };
+  }
+
+  async function fetchWithPdfTimeout(url, options = {}, timeoutMs = 30000, message = "La conexión tardó demasiado.") {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), Math.max(1000, Number(timeoutMs || 30000)));
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+      if (error?.name === "AbortError") throw new Error(message);
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function loadPdfJsLibrary() {
     if (!window.pdfjsLib) {
       await new Promise((resolve, reject) => {
@@ -2350,14 +2414,17 @@
       return { text: "", hasImages: false, pages: 0, readablePages: 0 };
     }
 
+    const timeouts = getPdfTimeouts();
     try {
-      const pdfjsLib = await loadPdfJsLibrary();
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      const pdfjsLib = await withTimeout(loadPdfJsLibrary(), timeouts.localRead, "No se pudo cargar el lector PDF a tiempo.");
+      const buffer = await withTimeout(file.arrayBuffer(), timeouts.base64, "El PDF tardó demasiado en prepararse.");
+      const loadingTask = pdfjsLib.getDocument({ data: buffer });
+      const pdf = await withTimeout(loadingTask.promise, timeouts.localRead, "El PDF tardó demasiado en abrirse.");
       const maxPages = Math.min(pdf.numPages || 0, 12);
       const parts = [];
       let hasImages = false;
       let readablePages = 0;
+      let partialError = "";
       const OPS = pdfjsLib.OPS || {};
       const imageOps = new Set([
         OPS.paintImageXObject,
@@ -2368,24 +2435,35 @@
       ].filter(value => value !== undefined && value !== null));
 
       for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
-        const page = await pdf.getPage(pageNumber);
-        const content = await page.getTextContent().catch(() => null);
-        const pageText = (content?.items || [])
-          .map(item => item && item.str ? item.str : "")
-          .filter(Boolean)
-          .join(" ")
-          .replace(/\s+/g, " ")
-          .trim();
-        if (pageText) {
-          readablePages += 1;
-          parts.push(pageText);
+        let page = null;
+        try {
+          page = await withTimeout(pdf.getPage(pageNumber), timeouts.pageRead, `La página ${pageNumber} tardó demasiado.`);
+        } catch (error) {
+          partialError = partialError || error?.message || String(error);
+          continue;
         }
 
         try {
-          const operatorList = await page.getOperatorList();
+          const content = await withTimeout(page.getTextContent(), timeouts.pageRead, `El texto de la página ${pageNumber} tardó demasiado.`).catch(() => null);
+          const pageText = (content?.items || [])
+            .map(item => item && item.str ? item.str : "")
+            .filter(Boolean)
+            .join(" ")
+            .replace(/\s+/g, " ")
+            .trim();
+          if (pageText) {
+            readablePages += 1;
+            parts.push(pageText);
+          }
+        } catch (error) {
+          partialError = partialError || error?.message || String(error);
+        }
+
+        try {
+          const operatorList = await withTimeout(page.getOperatorList(), timeouts.imageScan, `La revisión visual de la página ${pageNumber} tardó demasiado.`);
           if ((operatorList?.fnArray || []).some(fn => imageOps.has(fn))) hasImages = true;
-        } catch (_) {
-          // Si no podemos inspeccionar operadores, no bloqueamos por esto; solo enviamos a revisión si no hay texto legible.
+        } catch (error) {
+          partialError = partialError || error?.message || String(error);
         }
       }
 
@@ -2393,11 +2471,12 @@
         text: parts.join("\n").replace(/\s+/g, " ").trim().slice(0, 120000),
         hasImages,
         pages: pdf.numPages || 0,
-        readablePages
+        readablePages,
+        error: partialError || ""
       };
     } catch (error) {
       console.warn("No se pudo extraer contenido local del PDF", error);
-      return { text: "", hasImages: false, pages: 0, readablePages: 0, error: error?.message || String(error) };
+      return pdfTimeoutResult(error?.message || String(error));
     }
   }
 
@@ -2412,7 +2491,17 @@
     if (!list.length) return result;
 
     for (const file of list) {
-      const content = await extractPdfContentWithPdfJs(file);
+      let content = null;
+      try {
+        content = await withTimeout(
+          extractPdfContentWithPdfJs(file),
+          getPdfTimeouts().localRead + 5000,
+          "El PDF tardó demasiado en revisarse. Requiere revisión manual."
+        );
+      } catch (error) {
+        console.warn("La revisión del PDF tardó demasiado", error);
+        content = pdfTimeoutResult(error?.message || String(error));
+      }
       const text = content.text || "";
       const violation = detectForumViolation(file?.name || "", text);
       const hasReadableText = text.trim().length >= 20;
@@ -2464,7 +2553,17 @@
       return { analysis_status: "pending", analysis: emptyPdfAnalysis("pending") };
     }
 
-    const extractedText = await extractPdfTextWithPdfJs(file);
+    let extractedText = "";
+    try {
+      extractedText = await withTimeout(
+        extractPdfTextWithPdfJs(file),
+        getPdfTimeouts().localRead,
+        "El PDF tardó demasiado en leerse para el resumen."
+      );
+    } catch (error) {
+      console.warn("No se pudo leer el PDF para resumen dentro del tiempo", error);
+      extractedText = "";
+    }
 
     const body = JSON.stringify({
       name: file?.name || "documento.pdf",
@@ -2493,7 +2592,12 @@
             if (anonKey) headers.Authorization = `Bearer ${anonKey}`;
           }
         }
-        const response = await fetch(endpoint, { method: "POST", headers, body });
+        const response = await fetchWithPdfTimeout(
+          endpoint,
+          { method: "POST", headers, body },
+          getPdfTimeouts().analysis,
+          "El análisis del PDF tardó demasiado. Se publicará con resumen pendiente."
+        );
         const payload = await response.json().catch(() => ({}));
         if (!response.ok || payload?.ok === false) {
           throw new Error(payload?.error || `No se pudo analizar el PDF en ${endpoint}`);
@@ -2602,7 +2706,7 @@
       }
 
       setUploadProgress(root, Math.round(((index + .35) / list.length) * 100), `Preparando ${file.name}...`);
-      const base64 = await fileToBase64(file);
+      const base64 = await withTimeout(fileToBase64(file), getPdfTimeouts().base64, "El PDF tardó demasiado en prepararse.");
       setUploadProgress(root, Math.round(((index + .65) / list.length) * 100), `Subiendo ${file.name}...`);
 
       const driveAccount = await selectDriveAccountForPdf(file.size);
@@ -2610,7 +2714,7 @@
       let response;
       let payload = {};
       try {
-        response = await fetch(endpoint, {
+        response = await fetchWithPdfTimeout(endpoint, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
@@ -2624,7 +2728,7 @@
             drive_id: driveAccount?.id || "",
             folder_id: driveAccount?.folder_id || ""
           })
-        });
+        }, getPdfTimeouts().upload, "La subida del PDF tardó demasiado. Revisa tu conexión e intenta de nuevo.");
 
         const text = await response.text();
         try { payload = JSON.parse(text); } catch (_) {}
@@ -2637,8 +2741,18 @@
         throw error;
       }
 
-      setUploadProgress(root, Math.round(((index + .82) / list.length) * 100), `Analizando ${file.name}...`);
-      const aiSummary = await analyzePdfWithAI(file, base64);
+      setUploadProgress(root, Math.round(((index + .82) / list.length) * 100), `Preparando publicación de ${file.name}...`);
+      let aiSummary = makePendingPdfAnalysis();
+      try {
+        aiSummary = await withTimeout(
+          analyzePdfWithAI(file, base64),
+          getPdfTimeouts().analysis + 2000,
+          "El análisis del PDF tardó demasiado. Se publicará con resumen pendiente."
+        );
+      } catch (error) {
+        console.warn("El resumen del PDF no bloqueó la publicación", error);
+        aiSummary = makePendingPdfAnalysis(error?.message || "Resumen pendiente. Puedes revisar el PDF manualmente.");
+      }
 
       result.push({
         name: payload.name || file.name,
@@ -3616,6 +3730,7 @@
       if (parent) {
         comment.reply_to_author = parent.author || null;
         comment.reply_to_author_name = parent.author?.full_name || "Estudiante";
+        comment.reply_to_author_username = parent.author?.username || "";
         parent.children.push(comment);
       } else {
         roots.push(comment);
@@ -3632,8 +3747,10 @@
 
   function renderReplyTarget(comment, depth = 0) {
     if (!comment.parent_comment_id || depth <= 0) return "";
-    const name = comment.reply_to_author_name || comment.reply_to_author?.full_name || "Estudiante";
-    return `<span class="ig-reply-prefix">@${WT.escapeHTML(name)}</span>`;
+    const username = normalizeMentionUsername(comment.reply_to_author_username || comment.reply_to_author?.username || "");
+    const fallbackName = normalizeMentionUsername(comment.reply_to_author_name || comment.reply_to_author?.full_name || "usuario");
+    const label = username || fallbackName || "usuario";
+    return `<span class="ig-reply-prefix">@${WT.escapeHTML(label)}</span>`;
   }
 
   function canManageForumComments() {
@@ -3756,12 +3873,28 @@
       const pre = await WT.supabase.from("forum_comments").select("id,post_id,author_id,body").eq("id", commentId).maybeSingle();
       targetComment = pre?.data || null;
     } catch (_) {}
-    const { error } = await WT.supabase
+    const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
+      const rpc = await WT.supabase.rpc("approve_forum_comment_v4055", { comment_id: commentId });
+      if (!rpc.error) return rpc;
+      return WT.supabase
+        .from("forum_comments")
+        .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
+        .eq("id", commentId)
+        .select("id,status")
+        .maybeSingle();
+    }) : WT.supabase
       .from("forum_comments")
-      .update({ status: "approved" })
-      .eq("id", commentId);
-    if (error) {
-      WT.toast(error.message || "No se pudo aprobar el comentario", "error");
+      .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
+      .eq("id", commentId)
+      .select("id,status")
+      .maybeSingle());
+    if (approveResult?.error) {
+      WT.toast(approveResult.error.message || "No se pudo aprobar el comentario", "error");
+      return;
+    }
+    const verifyComment = await WT.supabase.from("forum_comments").select("id,status").eq("id", commentId).maybeSingle();
+    if (verifyComment.error || !verifyComment.data || verifyComment.data.status !== "approved") {
+      WT.toast(verifyComment.error?.message || "Supabase no confirmó la aprobación del comentario.", "error");
       return;
     }
     if (targetComment?.author_id) await sendForumPush(targetComment.author_id, { title: "Comentario aprobado", body: "Tu comentario fue aprobado en el foro.", url: `post.html?id=${targetComment.post_id || state.currentPost?.id || ""}`, type: "comment_approved", tag: `comment-approved-${commentId}` });
@@ -3848,12 +3981,30 @@
       const pre = await WT.supabase.from("forum_posts").select("id,title,author_id").eq("id", postId).maybeSingle();
       targetPost = pre?.data || null;
     } catch (_) {}
-    const { error } = await WT.supabase
+    const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
+      const rpc = await WT.supabase.rpc("approve_forum_post_v4055", { post_id: postId });
+      if (!rpc.error) return rpc;
+      const legacy = await WT.supabase.rpc("approve_forum_post", { post_id: postId });
+      if (!legacy.error) return legacy;
+      return WT.supabase
+        .from("forum_posts")
+        .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
+        .eq("id", postId)
+        .select("id,status")
+        .maybeSingle();
+    }) : WT.supabase
       .from("forum_posts")
       .update({ status: "approved", approved_by: state.myProfile?.id || null, approved_at: new Date().toISOString() })
-      .eq("id", postId);
-    if (error) {
-      WT.toast(error.message || "No se pudo aprobar la publicación", "error");
+      .eq("id", postId)
+      .select("id,status")
+      .maybeSingle());
+    if (approveResult?.error) {
+      WT.toast(approveResult.error.message || "No se pudo aprobar la publicación", "error");
+      return;
+    }
+    const verifyPost = await WT.supabase.from("forum_posts").select("id,status").eq("id", postId).maybeSingle();
+    if (verifyPost.error || !verifyPost.data || verifyPost.data.status !== "approved") {
+      WT.toast(verifyPost.error?.message || "Supabase no confirmó la aprobación de la publicación.", "error");
       return;
     }
     if (targetPost?.author_id) await sendForumPush(targetPost.author_id, { title: "Publicación aprobada", body: `Tu publicación “${targetPost.title || "del foro"}” fue aprobada.`, url: `post.html?id=${postId}`, type: "post_approved", tag: `post-approved-${postId}` });
@@ -3902,6 +4053,8 @@
     const safeDepth = depth > 0 ? 1 : 0;
     const isLiked = state.likedComments.has(comment.id);
     const authorName = author.full_name || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || "");
+    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const replyPrefix = renderReplyTarget(comment, depth);
     const isPending = String(comment.status || "approved").toLowerCase() === "pending";
@@ -3923,7 +4076,7 @@
         <p class="ig-comment-text">${replyPrefix}${renderMentions(comment.body)}</p>
         ${renderAttachmentGallery(comment, "comment")}
         <div class="ig-comment-actions">
-          <button class="ig-comment-action" data-reply-comment="${comment.id}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
+          <button class="ig-comment-action" data-reply-comment="${WT.escapeHTML(comment.id)}" data-reply-author-id="${WT.escapeHTML(authorId)}" data-reply-username="${WT.escapeHTML(authorUsername)}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
           <button class="ig-comment-action ig-comment-report" data-report-comment="${comment.id}" type="button">Reportar</button>
           ${canManageForumComments() && isPending ? `<button class="ig-comment-action ig-admin-approve" data-approve-comment="${WT.escapeHTML(comment.id)}" type="button">Aprobar</button>` : ""}
           ${canDeleteForumContent(comment, author) ? `<button class="ig-comment-action ig-admin-delete" data-delete-comment="${WT.escapeHTML(comment.id)}" type="button">Eliminar</button>` : ""}
@@ -3989,9 +4142,13 @@
     bindPublicProfileTriggers(root);
   }
 
-  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "") {
+  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "", authorId = "", username = "") {
+    const cleanUsername = normalizeMentionUsername(username || "");
     state.replyingTo = commentId ? {
       id: commentId,
+      parent_comment_id: commentId,
+      author_id: authorId || "",
+      username: cleanUsername,
       authorName,
       body: String(replyBody || "").slice(0, 180),
       avatar: WT.sanitizeImageUrl(replyAvatar || "", "images/placeholder-avatar.png")
@@ -4016,7 +4173,7 @@
       else preview.setAttribute("hidden", "");
     }
     if (previewAvatar) previewAvatar.src = state.replyingTo?.avatar || "images/placeholder-avatar.png";
-    if (previewAuthor) previewAuthor.textContent = state.replyingTo?.authorName || "";
+    if (previewAuthor) previewAuthor.textContent = state.replyingTo?.username ? `@${normalizeMentionUsername(state.replyingTo.username)}` : (state.replyingTo?.authorName || "");
     if (previewText) previewText.textContent = state.replyingTo?.body || "";
     if (composer) composer.classList.toggle("is-replying", !!state.replyingTo);
     if (!state.replyingTo && composer) {
@@ -4032,6 +4189,11 @@
     if (input) {
       input.placeholder = state.replyingTo ? "Escribe tu respuesta..." : "¿Qué opinas sobre esto?";
       if (state.replyingTo) {
+        const replyUsername = normalizeMentionUsername(state.replyingTo.username || "");
+        if (replyUsername && !input.value.trim()) {
+          input.value = `@${replyUsername} `;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
         try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
         scrollComposerAboveKeyboard();
         setTimeout(syncCommentComposerKeyboard, 60);
@@ -4239,7 +4401,7 @@
         if (text) text.textContent = "";
         if (preview) preview.hidden = false;
         if (previewAvatar) previewAvatar.src = WT.sanitizeImageUrl(draft.replyingTo.avatar || "", "images/placeholder-avatar.png");
-        if (previewAuthor) previewAuthor.textContent = draft.replyingTo.authorName || "comentario";
+        if (previewAuthor) previewAuthor.textContent = draft.replyingTo.username ? `@${normalizeMentionUsername(draft.replyingTo.username)}` : (draft.replyingTo.authorName || "comentario");
         if (previewText) previewText.textContent = draft.replyingTo.body || "Comentario seleccionado";
         if (composer) composer.classList.add("is-replying");
         bodyEl.placeholder = "Escribe tu respuesta...";
@@ -4550,7 +4712,16 @@
       }
 
       const reply = e.target.closest("[data-reply-comment]");
-      if (reply) setReplyTarget(reply.dataset.replyComment, reply.dataset.replyAuthor || "comentario", reply.dataset.replyBody || "", reply.dataset.replyAvatar || "");
+      if (reply) {
+        setReplyTarget(
+          reply.dataset.replyComment,
+          reply.dataset.replyAuthor || "comentario",
+          reply.dataset.replyBody || "",
+          reply.dataset.replyAvatar || "",
+          reply.dataset.replyAuthorId || "",
+          reply.dataset.replyUsername || ""
+        );
+      }
 
       const toggleReplies = e.target.closest("[data-toggle-comment-replies]");
       if (toggleReplies) {

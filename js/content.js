@@ -106,7 +106,7 @@
     if (!ids.length) return items;
 
     const [{ data: profiles }, { data: badgeRows }] = await Promise.all([
-      WT.supabase.from("public_profiles").select("id,full_name,photo_url,role,status").in("id", ids),
+      WT.supabase.from("public_profiles").select("id,full_name,username,photo_url,role,status").in("id", ids),
       WT.supabase.from("user_badges").select("user_id,badge_definitions(id,name,icon,color,active)").in("user_id", ids)
     ]);
 
