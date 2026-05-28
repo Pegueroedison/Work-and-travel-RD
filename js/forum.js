@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4055: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4056: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4055: primero intenta usar la función RPC inteligente.
+    // V4056: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4055", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4056", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4055: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4056: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -2349,41 +2349,6 @@
 
 
 
-  function getPdfTimeouts() {
-    const cfg = getPdfConfig();
-    return {
-      localRead: Number(cfg.LOCAL_READ_TIMEOUT_MS || 12000),
-      pageRead: Number(cfg.PAGE_READ_TIMEOUT_MS || 2500),
-      imageScan: Number(cfg.IMAGE_SCAN_TIMEOUT_MS || 1200),
-      base64: Number(cfg.BASE64_TIMEOUT_MS || 15000),
-      upload: Number(cfg.UPLOAD_TIMEOUT_MS || 90000),
-      analysis: Number(cfg.AI_SUMMARY_TIMEOUT_MS || 9000)
-    };
-  }
-
-  function pdfTimeoutResult(message = "El PDF tardó demasiado en analizarse. Requiere revisión manual.") {
-    return { text: "", hasImages: false, pages: 0, readablePages: 0, error: message, timedOut: true };
-  }
-
-  function makePendingPdfAnalysis(message = "Resumen pendiente. El PDF se publicó, pero el análisis no se completó a tiempo.") {
-    const pending = emptyPdfAnalysis("pending");
-    pending.message = message;
-    return { analysis_status: "pending", analysis: pending };
-  }
-
-  async function fetchWithPdfTimeout(url, options = {}, timeoutMs = 30000, message = "La conexión tardó demasiado.") {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), Math.max(1000, Number(timeoutMs || 30000)));
-    try {
-      return await fetch(url, { ...options, signal: controller.signal });
-    } catch (error) {
-      if (error?.name === "AbortError") throw new Error(message);
-      throw error;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
   async function loadPdfJsLibrary() {
     if (!window.pdfjsLib) {
       await new Promise((resolve, reject) => {
@@ -2414,17 +2379,14 @@
       return { text: "", hasImages: false, pages: 0, readablePages: 0 };
     }
 
-    const timeouts = getPdfTimeouts();
     try {
-      const pdfjsLib = await withTimeout(loadPdfJsLibrary(), timeouts.localRead, "No se pudo cargar el lector PDF a tiempo.");
-      const buffer = await withTimeout(file.arrayBuffer(), timeouts.base64, "El PDF tardó demasiado en prepararse.");
-      const loadingTask = pdfjsLib.getDocument({ data: buffer });
-      const pdf = await withTimeout(loadingTask.promise, timeouts.localRead, "El PDF tardó demasiado en abrirse.");
+      const pdfjsLib = await loadPdfJsLibrary();
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
       const maxPages = Math.min(pdf.numPages || 0, 12);
       const parts = [];
       let hasImages = false;
       let readablePages = 0;
-      let partialError = "";
       const OPS = pdfjsLib.OPS || {};
       const imageOps = new Set([
         OPS.paintImageXObject,
@@ -2435,35 +2397,24 @@
       ].filter(value => value !== undefined && value !== null));
 
       for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
-        let page = null;
-        try {
-          page = await withTimeout(pdf.getPage(pageNumber), timeouts.pageRead, `La página ${pageNumber} tardó demasiado.`);
-        } catch (error) {
-          partialError = partialError || error?.message || String(error);
-          continue;
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent().catch(() => null);
+        const pageText = (content?.items || [])
+          .map(item => item && item.str ? item.str : "")
+          .filter(Boolean)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (pageText) {
+          readablePages += 1;
+          parts.push(pageText);
         }
 
         try {
-          const content = await withTimeout(page.getTextContent(), timeouts.pageRead, `El texto de la página ${pageNumber} tardó demasiado.`).catch(() => null);
-          const pageText = (content?.items || [])
-            .map(item => item && item.str ? item.str : "")
-            .filter(Boolean)
-            .join(" ")
-            .replace(/\s+/g, " ")
-            .trim();
-          if (pageText) {
-            readablePages += 1;
-            parts.push(pageText);
-          }
-        } catch (error) {
-          partialError = partialError || error?.message || String(error);
-        }
-
-        try {
-          const operatorList = await withTimeout(page.getOperatorList(), timeouts.imageScan, `La revisión visual de la página ${pageNumber} tardó demasiado.`);
+          const operatorList = await page.getOperatorList();
           if ((operatorList?.fnArray || []).some(fn => imageOps.has(fn))) hasImages = true;
-        } catch (error) {
-          partialError = partialError || error?.message || String(error);
+        } catch (_) {
+          // Si no podemos inspeccionar operadores, no bloqueamos por esto; solo enviamos a revisión si no hay texto legible.
         }
       }
 
@@ -2471,12 +2422,11 @@
         text: parts.join("\n").replace(/\s+/g, " ").trim().slice(0, 120000),
         hasImages,
         pages: pdf.numPages || 0,
-        readablePages,
-        error: partialError || ""
+        readablePages
       };
     } catch (error) {
       console.warn("No se pudo extraer contenido local del PDF", error);
-      return pdfTimeoutResult(error?.message || String(error));
+      return { text: "", hasImages: false, pages: 0, readablePages: 0, error: error?.message || String(error) };
     }
   }
 
@@ -2491,17 +2441,7 @@
     if (!list.length) return result;
 
     for (const file of list) {
-      let content = null;
-      try {
-        content = await withTimeout(
-          extractPdfContentWithPdfJs(file),
-          getPdfTimeouts().localRead + 5000,
-          "El PDF tardó demasiado en revisarse. Requiere revisión manual."
-        );
-      } catch (error) {
-        console.warn("La revisión del PDF tardó demasiado", error);
-        content = pdfTimeoutResult(error?.message || String(error));
-      }
+      const content = await extractPdfContentWithPdfJs(file);
       const text = content.text || "";
       const violation = detectForumViolation(file?.name || "", text);
       const hasReadableText = text.trim().length >= 20;
@@ -2553,17 +2493,7 @@
       return { analysis_status: "pending", analysis: emptyPdfAnalysis("pending") };
     }
 
-    let extractedText = "";
-    try {
-      extractedText = await withTimeout(
-        extractPdfTextWithPdfJs(file),
-        getPdfTimeouts().localRead,
-        "El PDF tardó demasiado en leerse para el resumen."
-      );
-    } catch (error) {
-      console.warn("No se pudo leer el PDF para resumen dentro del tiempo", error);
-      extractedText = "";
-    }
+    const extractedText = await extractPdfTextWithPdfJs(file);
 
     const body = JSON.stringify({
       name: file?.name || "documento.pdf",
@@ -2592,12 +2522,7 @@
             if (anonKey) headers.Authorization = `Bearer ${anonKey}`;
           }
         }
-        const response = await fetchWithPdfTimeout(
-          endpoint,
-          { method: "POST", headers, body },
-          getPdfTimeouts().analysis,
-          "El análisis del PDF tardó demasiado. Se publicará con resumen pendiente."
-        );
+        const response = await fetch(endpoint, { method: "POST", headers, body });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok || payload?.ok === false) {
           throw new Error(payload?.error || `No se pudo analizar el PDF en ${endpoint}`);
@@ -2706,7 +2631,7 @@
       }
 
       setUploadProgress(root, Math.round(((index + .35) / list.length) * 100), `Preparando ${file.name}...`);
-      const base64 = await withTimeout(fileToBase64(file), getPdfTimeouts().base64, "El PDF tardó demasiado en prepararse.");
+      const base64 = await fileToBase64(file);
       setUploadProgress(root, Math.round(((index + .65) / list.length) * 100), `Subiendo ${file.name}...`);
 
       const driveAccount = await selectDriveAccountForPdf(file.size);
@@ -2714,7 +2639,7 @@
       let response;
       let payload = {};
       try {
-        response = await fetchWithPdfTimeout(endpoint, {
+        response = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
@@ -2728,7 +2653,7 @@
             drive_id: driveAccount?.id || "",
             folder_id: driveAccount?.folder_id || ""
           })
-        }, getPdfTimeouts().upload, "La subida del PDF tardó demasiado. Revisa tu conexión e intenta de nuevo.");
+        });
 
         const text = await response.text();
         try { payload = JSON.parse(text); } catch (_) {}
@@ -2741,18 +2666,8 @@
         throw error;
       }
 
-      setUploadProgress(root, Math.round(((index + .82) / list.length) * 100), `Preparando publicación de ${file.name}...`);
-      let aiSummary = makePendingPdfAnalysis();
-      try {
-        aiSummary = await withTimeout(
-          analyzePdfWithAI(file, base64),
-          getPdfTimeouts().analysis + 2000,
-          "El análisis del PDF tardó demasiado. Se publicará con resumen pendiente."
-        );
-      } catch (error) {
-        console.warn("El resumen del PDF no bloqueó la publicación", error);
-        aiSummary = makePendingPdfAnalysis(error?.message || "Resumen pendiente. Puedes revisar el PDF manualmente.");
-      }
+      setUploadProgress(root, Math.round(((index + .82) / list.length) * 100), `Analizando ${file.name}...`);
+      const aiSummary = await analyzePdfWithAI(file, base64);
 
       result.push({
         name: payload.name || file.name,
@@ -3874,7 +3789,7 @@
       targetComment = pre?.data || null;
     } catch (_) {}
     const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
-      const rpc = await WT.supabase.rpc("approve_forum_comment_v4055", { comment_id: commentId });
+      const rpc = await WT.supabase.rpc("approve_forum_comment_v4056", { comment_id: commentId });
       if (!rpc.error) return rpc;
       return WT.supabase
         .from("forum_comments")
@@ -3982,7 +3897,7 @@
       targetPost = pre?.data || null;
     } catch (_) {}
     const approveResult = await (WT.runWithSession ? WT.runWithSession(async () => {
-      const rpc = await WT.supabase.rpc("approve_forum_post_v4055", { post_id: postId });
+      const rpc = await WT.supabase.rpc("approve_forum_post_v4056", { post_id: postId });
       if (!rpc.error) return rpc;
       const legacy = await WT.supabase.rpc("approve_forum_post", { post_id: postId });
       if (!legacy.error) return legacy;

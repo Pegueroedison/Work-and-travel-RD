@@ -261,7 +261,7 @@
     if (btn) { btn.disabled = true; btn.textContent = "Aprobando..."; }
     try {
       const result = await WTAdminContent.adminQuery(async () => {
-        const rpc = await WT.supabase.rpc("approve_forum_post_v4055", { post_id: id });
+        const rpc = await WT.supabase.rpc("approve_forum_post_v4056", { post_id: id });
         if (!rpc.error) return rpc;
         const legacy = await WT.supabase.rpc("approve_forum_post", { post_id: id });
         if (!legacy.error) return legacy;
@@ -295,7 +295,7 @@
     if (btn) { btn.disabled = true; btn.textContent = "Aprobando..."; }
     try {
       const result = await WTAdminContent.adminQuery(async () => {
-        const rpc = await WT.supabase.rpc("approve_forum_comment_v4055", { comment_id: id });
+        const rpc = await WT.supabase.rpc("approve_forum_comment_v4056", { comment_id: id });
         if (!rpc.error) return rpc;
         return WT.supabase
           .from("forum_comments")
