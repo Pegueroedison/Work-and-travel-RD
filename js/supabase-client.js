@@ -14,12 +14,48 @@
   let lastSessionCheck = 0;
   let sessionRefreshPromise = null;
 
+  function authErrorLooksExpired(errorLike) {
+    const message = String(errorLike?.message || errorLike || "").toLowerCase();
+    return Boolean(
+      message.includes("jwt") ||
+      message.includes("expired") ||
+      message.includes("refresh") ||
+      message.includes("session") ||
+      message.includes("auth") ||
+      message.includes("invalid token") ||
+      message.includes("not authenticated")
+    );
+  }
+
+  function withTimeout(promise, ms = 6500, label = "operación") {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} tardó demasiado`)), ms))
+    ]);
+  }
+
+  function hasActiveCriticalFlow() {
+    try {
+      if (document.body?.dataset?.wtCriticalFlow === "1") return true;
+      return Array.from(document.querySelectorAll("button[disabled]")).some(btn =>
+        /publicando|subiendo|guardando|procesando|analizando/i.test(String(btn.textContent || ""))
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
   async function ensureSessionFresh({ force = false } = {}) {
     if (!client) return null;
     const now = Date.now();
+
     if (!force && now - lastSessionCheck < 25000) {
-      const { data } = await client.auth.getSession();
-      return data?.session || null;
+      try {
+        const { data } = await withTimeout(client.auth.getSession(), 4500, "getSession");
+        return data?.session || null;
+      } catch (_) {
+        return null;
+      }
     }
 
     if (sessionRefreshPromise) return sessionRefreshPromise;
@@ -27,15 +63,15 @@
     sessionRefreshPromise = (async () => {
       try {
         lastSessionCheck = Date.now();
-        const { data, error } = await client.auth.getSession();
+        const { data, error } = await withTimeout(client.auth.getSession(), 6500, "getSession");
         if (error) throw error;
 
         const session = data?.session || null;
         const expiresAt = Number(session?.expires_at || 0) * 1000;
         const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 4 * 60 * 1000);
 
-        if (session && nearExpiry) {
-          const refreshed = await client.auth.refreshSession();
+        if (session && (force || nearExpiry)) {
+          const refreshed = await withTimeout(client.auth.refreshSession(), 6500, "refreshSession");
           if (refreshed?.error) throw refreshed.error;
           return refreshed?.data?.session || session;
         }
@@ -52,39 +88,57 @@
     return sessionRefreshPromise;
   }
 
+  async function wakeSupabaseSession({ reason = "manual" } = {}) {
+    if (!client || hasActiveCriticalFlow()) return null;
+    const session = await ensureSessionFresh({ force: false });
+    try {
+      window.dispatchEvent(new CustomEvent("wt:session-wake", { detail: { reason, hasSession: Boolean(session) } }));
+    } catch (_) {}
+    return session;
+  }
+
   async function runWithSession(action, { retry = true } = {}) {
-    await ensureSessionFresh({ force: false });
-    const result = await action();
-    const message = String(result?.error?.message || result?.error || "").toLowerCase();
-    const expired = result?.error && (
-      message.includes("jwt") ||
-      message.includes("expired") ||
-      message.includes("refresh") ||
-      message.includes("session") ||
-      message.includes("auth")
-    );
+    try {
+      if (!hasActiveCriticalFlow()) {
+        await withTimeout(ensureSessionFresh({ force: false }), 6500, "preparar sesión");
+      }
+    } catch (_) {}
 
-    if (expired && retry) {
-      await ensureSessionFresh({ force: true });
-      return action();
+    try {
+      const result = await action();
+      if (result?.error && retry && authErrorLooksExpired(result.error)) {
+        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
+        return action();
+      }
+      return result;
+    } catch (error) {
+      if (retry && authErrorLooksExpired(error)) {
+        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
+        return action();
+      }
+      throw error;
     }
-
-    return result;
   }
 
   function bindSessionKeepAlive() {
     if (!client || window.__WT_SESSION_KEEPALIVE_BOUND__) return;
     window.__WT_SESSION_KEEPALIVE_BOUND__ = true;
 
-    const refresh = () => ensureSessionFresh({ force: true });
+    const softWake = () => {
+      if (document.visibilityState !== "visible") return;
+      if (hasActiveCriticalFlow()) return;
+      wakeSupabaseSession({ reason: "resume" }).catch(() => {});
+    };
+
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") refresh();
+      if (document.visibilityState === "visible") setTimeout(softWake, 500);
     });
-    window.addEventListener("focus", refresh);
-    window.addEventListener("online", refresh);
+    window.addEventListener("pageshow", () => setTimeout(softWake, 350));
+    window.addEventListener("focus", () => setTimeout(softWake, 900));
+    window.addEventListener("online", () => setTimeout(softWake, 350));
 
     setInterval(() => {
-      if (document.visibilityState === "visible") ensureSessionFresh({ force: false });
+      if (document.visibilityState === "visible" && !hasActiveCriticalFlow()) ensureSessionFresh({ force: false });
     }, 120000);
   }
 
@@ -760,7 +814,7 @@
   bindSessionKeepAlive();
 
   window.WT = {
-    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, getAccessToken, runWithSession, bindSessionKeepAlive,
+    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, wakeSupabaseSession, getAccessToken, runWithSession, bindSessionKeepAlive,
     escapeHTML, formatDate, parseSettingValue, toast, showModal, confirmDialog,
     renderRoleBadge, renderUserBadges, publicUrl, isSupabaseStorageUrl, sanitizeImageUrl, r2KeyFromUrl, collectImageKeysFromRecord, deleteR2Image, deleteR2ImagesFromRecords, deleteGoogleDrivePdfsFromRecords, dataUrlToBlob, uploadBlob, getImageCompressionSettings, clearImageCompressionSettingsCache, getCurrentUser, getMyProfile, bindCommonUI
   };

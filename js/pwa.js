@@ -42,83 +42,45 @@
   function hasUnsavedUserInput() { return qsa("textarea,input[type='text'],input[type='email'],input:not([type])").some(el => !el.disabled && String(el.value || "").trim().length > 0 && el.offsetParent !== null); }
   function installAppResumeRecovery() {
     const pagesThatUseDB = /(?:index|foro|post|admin|servicios|servicio|cursos|curso|practica-consular)\.html$|\/$/i;
-    let failCount = 0;
-    let lastWarningAt = 0;
     let checkTimer = null;
-    let reloadScheduled = false;
 
-    const pingSupabase = async () => {
-      if (window.WT?.ensureSessionFresh) {
-        return window.WT.ensureSessionFresh({ force: false });
-      }
-      return window.WT.supabase.auth.getSession();
+    const hasActiveCriticalFlow = () => {
+      try {
+        if (document.body?.dataset?.wtCriticalFlow === "1") return true;
+        return qsa("button[disabled]").some(btn => /publicando|subiendo|guardando|procesando|analizando/i.test(btn.textContent || ""));
+      } catch (_) { return false; }
     };
 
-    // Recarga suave con fade para evitar el flash blanco en Android PWA
-    const smoothReload = (delayMs = 1400) => {
-      if (reloadScheduled) return;
-      reloadScheduled = true;
-      document.documentElement.style.transition = "opacity 0.35s ease";
-      document.documentElement.style.opacity = "0";
-      setTimeout(() => location.reload(), delayMs);
-    };
-
-    const checkConnection = () => {
+    const wakeSupabaseSoftly = async () => {
       if (recovering || document.hidden || !window.WT?.supabase || !pagesThatUseDB.test(location.pathname || "/")) return;
-      const slept = hiddenAt ? Date.now() - hiddenAt : 0;
-      // Umbral 25 s: menos falsos positivos en Android (12 s era muy agresivo)
-      if (slept && slept < 25000) return;
+      if (hasActiveCriticalFlow()) return;
 
       recovering = true;
-      Promise.race([
-        pingSupabase(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000))
-      ])
-        .then(() => {
-          failCount = 0;
-          reloadScheduled = false;
-          window.dispatchEvent(new CustomEvent("wt:app-resumed"));
-        })
-        .catch(() => {
-          failCount += 1;
-
-          if (!hasUnsavedUserInput()) {
-            try { window.WT.toast("Actualizando la sesión…", "warning"); } catch (_) {}
-            smoothReload(1400);
-            return;
-          }
-
-          const now = Date.now();
-          if (now - lastWarningAt > 15000) {
-            lastWarningAt = now;
-            try { window.WT.toast("La conexión se interrumpió. Guarda o copia tu texto antes de actualizar.", "warning"); } catch (_) {}
-          }
-        })
-        .finally(() => {
-          hiddenAt = 0;
-          recovering = false;
-        });
+      try {
+        if (window.WT?.wakeSupabaseSession) await window.WT.wakeSupabaseSession({ reason: "pwa-resume" });
+        else if (window.WT?.ensureSessionFresh) await window.WT.ensureSessionFresh({ force: false });
+        else await window.WT.supabase.auth.getSession();
+        window.dispatchEvent(new CustomEvent("wt:app-resumed"));
+      } catch (_) {
+        // No recargar ni interrumpir formularios/subidas. La acción real reintentará sesión si recibe JWT/Auth.
+      } finally {
+        hiddenAt = 0;
+        recovering = false;
+      }
     };
 
-    const scheduleCheck = (delay = 700) => {
+    const scheduleWake = (delay = 700) => {
       clearTimeout(checkTimer);
-      checkTimer = setTimeout(checkConnection, delay);
+      checkTimer = setTimeout(wakeSupabaseSoftly, delay);
     };
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) hiddenAt = Date.now();
-      else scheduleCheck(1100);
+      else scheduleWake(900);
     });
-    window.addEventListener("pageshow", e => {
-      if (e.persisted) hiddenAt = Date.now() - 26000;
-      scheduleCheck(1100);
-    });
-    window.addEventListener("focus", () => scheduleCheck(1400));
-    window.addEventListener("online", () => {
-      failCount = 0;
-      reloadScheduled = false;
-      scheduleCheck(700);
-    });
+    window.addEventListener("pageshow", () => scheduleWake(500));
+    window.addEventListener("focus", () => scheduleWake(1100));
+    window.addEventListener("online", () => scheduleWake(500));
   }
 
   function installFreezeProtection() {
