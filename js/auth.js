@@ -1875,6 +1875,8 @@
 
       picker = document.createElement("div");
       picker.className = "country-picker-backdrop";
+      picker.style.zIndex = "2147483647";
+      document.body.classList.add("country-picker-open");
       picker.innerHTML = `<div class="country-picker-sheet" role="dialog" aria-modal="true" aria-label="Selecciona tu país">
         <div class="country-picker-handle" aria-hidden="true"></div>
         <div class="country-picker-head">
@@ -1890,6 +1892,7 @@
       const closePicker = () => {
         picker?.remove();
         picker = null;
+        document.body.classList.remove("country-picker-open");
       };
 
       picker.addEventListener("click", (event) => {
