@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4047: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4048: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,7 +352,7 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4047: primero intenta usar la función RPC inteligente.
+    // V4048: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
       const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4047", {
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4047: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4048: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -545,6 +545,8 @@
 
   function renderAuthorTrigger(author = {}, { compact = false } = {}) {
     const authorName = author.full_name || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || "");
+    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const badges = WT.renderUserBadges(author.badges || []);
     const payload = authorPayloadAttr(author);
@@ -3146,6 +3148,8 @@
     const body       = post.body || "";
     const excerpt    = renderMentions(body.slice(0, 200)) + (body.length > 200 ? "…" : "");
     const authorName = author.full_name || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || "");
+    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const postImage  = renderAttachmentGallery(post, "post");
     const url        = postUrl(post.id);
@@ -3645,6 +3649,7 @@
       if (parent) {
         comment.reply_to_author = parent.author || null;
         comment.reply_to_author_name = parent.author?.full_name || "Estudiante";
+        comment.reply_to_author_username = parent.author?.username || "";
         parent.children.push(comment);
       } else {
         roots.push(comment);
@@ -3661,8 +3666,10 @@
 
   function renderReplyTarget(comment, depth = 0) {
     if (!comment.parent_comment_id || depth <= 0) return "";
-    const name = comment.reply_to_author_name || comment.reply_to_author?.full_name || "Estudiante";
-    return `<span class="ig-reply-prefix">@${WT.escapeHTML(name)}</span>`;
+    const username = normalizeMentionUsername(comment.reply_to_author_username || comment.reply_to_author?.username || "");
+    const fallbackName = normalizeMentionUsername(comment.reply_to_author_name || comment.reply_to_author?.full_name || "usuario");
+    const label = username || fallbackName || "usuario";
+    return `<span class="ig-reply-prefix">@${WT.escapeHTML(label)}</span>`;
   }
 
   function canManageForumComments() {
@@ -3931,6 +3938,8 @@
     const safeDepth = depth > 0 ? 1 : 0;
     const isLiked = state.likedComments.has(comment.id);
     const authorName = author.full_name || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || "");
+    const authorId = comment.author_id || author.id || "";
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const replyPrefix = renderReplyTarget(comment, depth);
     const isPending = String(comment.status || "approved").toLowerCase() === "pending";
@@ -3952,7 +3961,7 @@
         <p class="ig-comment-text">${replyPrefix}${renderMentions(comment.body)}</p>
         ${renderAttachmentGallery(comment, "comment")}
         <div class="ig-comment-actions">
-          <button class="ig-comment-action" data-reply-comment="${comment.id}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
+          <button class="ig-comment-action" data-reply-comment="${WT.escapeHTML(comment.id)}" data-reply-author-id="${WT.escapeHTML(authorId)}" data-reply-username="${WT.escapeHTML(authorUsername)}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
           <button class="ig-comment-action ig-comment-report" data-report-comment="${comment.id}" type="button">Reportar</button>
           ${canManageForumComments() && isPending ? `<button class="ig-comment-action ig-admin-approve" data-approve-comment="${WT.escapeHTML(comment.id)}" type="button">Aprobar</button>` : ""}
           ${canDeleteForumContent(comment, author) ? `<button class="ig-comment-action ig-admin-delete" data-delete-comment="${WT.escapeHTML(comment.id)}" type="button">Eliminar</button>` : ""}
@@ -4018,9 +4027,13 @@
     bindPublicProfileTriggers(root);
   }
 
-  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "") {
+  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "", authorId = "", username = "") {
+    const cleanUsername = normalizeMentionUsername(username || "");
     state.replyingTo = commentId ? {
       id: commentId,
+      parent_comment_id: commentId,
+      author_id: authorId || "",
+      username: cleanUsername,
       authorName,
       body: String(replyBody || "").slice(0, 180),
       avatar: WT.sanitizeImageUrl(replyAvatar || "", "images/placeholder-avatar.png")
@@ -4045,7 +4058,7 @@
       else preview.setAttribute("hidden", "");
     }
     if (previewAvatar) previewAvatar.src = state.replyingTo?.avatar || "images/placeholder-avatar.png";
-    if (previewAuthor) previewAuthor.textContent = state.replyingTo?.authorName || "";
+    if (previewAuthor) previewAuthor.textContent = state.replyingTo?.username ? `@${normalizeMentionUsername(state.replyingTo.username)}` : (state.replyingTo?.authorName || "");
     if (previewText) previewText.textContent = state.replyingTo?.body || "";
     if (composer) composer.classList.toggle("is-replying", !!state.replyingTo);
     if (!state.replyingTo && composer) {
@@ -4061,6 +4074,11 @@
     if (input) {
       input.placeholder = state.replyingTo ? "Escribe tu respuesta..." : "¿Qué opinas sobre esto?";
       if (state.replyingTo) {
+        const replyUsername = normalizeMentionUsername(state.replyingTo.username || "");
+        if (replyUsername && !input.value.trim()) {
+          input.value = `@${replyUsername} `;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
         try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
         scrollComposerAboveKeyboard();
         setTimeout(syncCommentComposerKeyboard, 60);
@@ -4268,7 +4286,7 @@
         if (text) text.textContent = "";
         if (preview) preview.hidden = false;
         if (previewAvatar) previewAvatar.src = WT.sanitizeImageUrl(draft.replyingTo.avatar || "", "images/placeholder-avatar.png");
-        if (previewAuthor) previewAuthor.textContent = draft.replyingTo.authorName || "comentario";
+        if (previewAuthor) previewAuthor.textContent = draft.replyingTo.username ? `@${normalizeMentionUsername(draft.replyingTo.username)}` : (draft.replyingTo.authorName || "comentario");
         if (previewText) previewText.textContent = draft.replyingTo.body || "Comentario seleccionado";
         if (composer) composer.classList.add("is-replying");
         bodyEl.placeholder = "Escribe tu respuesta...";
@@ -4579,7 +4597,16 @@
       }
 
       const reply = e.target.closest("[data-reply-comment]");
-      if (reply) setReplyTarget(reply.dataset.replyComment, reply.dataset.replyAuthor || "comentario", reply.dataset.replyBody || "", reply.dataset.replyAvatar || "");
+      if (reply) {
+        setReplyTarget(
+          reply.dataset.replyComment,
+          reply.dataset.replyAuthor || "comentario",
+          reply.dataset.replyBody || "",
+          reply.dataset.replyAvatar || "",
+          reply.dataset.replyAuthorId || "",
+          reply.dataset.replyUsername || ""
+        );
+      }
 
       const toggleReplies = e.target.closest("[data-toggle-comment-replies]");
       if (toggleReplies) {
