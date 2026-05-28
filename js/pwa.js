@@ -45,21 +45,28 @@
     let failCount = 0;
     let lastWarningAt = 0;
     let checkTimer = null;
+    let reloadScheduled = false;
 
     const pingSupabase = async () => {
-      if (window.WT?.resumeSession) {
-        return window.WT.resumeSession({ force: true, reason: "app_resume" });
-      }
       if (window.WT?.ensureSessionFresh) {
-        return window.WT.ensureSessionFresh({ force: true });
+        return window.WT.ensureSessionFresh({ force: false });
       }
-      return window.WT?.supabase?.auth?.getSession?.();
+      return window.WT.supabase.auth.getSession();
+    };
+
+    // Recarga suave con fade para evitar el flash blanco en Android PWA
+    const smoothReload = (delayMs = 1400) => {
+      if (reloadScheduled) return;
+      reloadScheduled = true;
+      document.documentElement.style.transition = "opacity 0.35s ease";
+      document.documentElement.style.opacity = "0";
+      setTimeout(() => location.reload(), delayMs);
     };
 
     const checkConnection = () => {
       if (recovering || document.hidden || !window.WT?.supabase || !pagesThatUseDB.test(location.pathname || "/")) return;
       const slept = hiddenAt ? Date.now() - hiddenAt : 0;
-      // Umbral 25 s: evita trabajo innecesario cuando el usuario solo cambió rápido de pestaña.
+      // Umbral 25 s: menos falsos positivos en Android (12 s era muy agresivo)
       if (slept && slept < 25000) return;
 
       recovering = true;
@@ -69,32 +76,22 @@
       ])
         .then(() => {
           failCount = 0;
+          reloadScheduled = false;
           window.dispatchEvent(new CustomEvent("wt:app-resumed"));
         })
         .catch(() => {
           failCount += 1;
-          window.dispatchEvent(new CustomEvent("wt:app-resume-retry", { detail: { failCount } }));
 
-          if (navigator.onLine === false) {
-            const now = Date.now();
-            if (now - lastWarningAt > 15000) {
-              lastWarningAt = now;
-              try { window.WT.toast("Sin conexión. Cuando vuelva internet, la app reconectará sola.", "warning"); } catch (_) {}
-            }
-            return;
-          }
-
-          // Nunca recargar automáticamente: si el usuario estaba escribiendo una publicación,
-          // configurando el perfil o revisando un panel, se conserva exactamente donde estaba.
-          if (failCount < 3) {
-            scheduleCheck(900 + (failCount * 900));
+          if (!hasUnsavedUserInput()) {
+            try { window.WT.toast("Actualizando la sesión…", "warning"); } catch (_) {}
+            smoothReload(1400);
             return;
           }
 
           const now = Date.now();
-          if (now - lastWarningAt > 20000) {
+          if (now - lastWarningAt > 15000) {
             lastWarningAt = now;
-            try { window.WT.toast("La conexión está lenta. Intenta de nuevo; la app seguirá reconectando sin recargar.", "warning"); } catch (_) {}
+            try { window.WT.toast("La conexión se interrumpió. Guarda o copia tu texto antes de actualizar.", "warning"); } catch (_) {}
           }
         })
         .finally(() => {
@@ -110,16 +107,17 @@
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) hiddenAt = Date.now();
-      else scheduleCheck(650);
+      else scheduleCheck(1100);
     });
     window.addEventListener("pageshow", e => {
       if (e.persisted) hiddenAt = Date.now() - 26000;
-      scheduleCheck(650);
+      scheduleCheck(1100);
     });
-    window.addEventListener("focus", () => scheduleCheck(750));
+    window.addEventListener("focus", () => scheduleCheck(1400));
     window.addEventListener("online", () => {
       failCount = 0;
-      scheduleCheck(300);
+      reloadScheduled = false;
+      scheduleCheck(700);
     });
   }
 
