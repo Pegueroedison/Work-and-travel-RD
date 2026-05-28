@@ -42,45 +42,85 @@
   function hasUnsavedUserInput() { return qsa("textarea,input[type='text'],input[type='email'],input:not([type])").some(el => !el.disabled && String(el.value || "").trim().length > 0 && el.offsetParent !== null); }
   function installAppResumeRecovery() {
     const pagesThatUseDB = /(?:index|foro|post|admin|servicios|servicio|cursos|curso|practica-consular)\.html$|\/$/i;
+    let failCount = 0;
+    let lastWarningAt = 0;
     let checkTimer = null;
 
-    const hasActiveCriticalFlow = () => {
-      try {
-        if (document.body?.dataset?.wtCriticalFlow === "1") return true;
-        return qsa("button[disabled]").some(btn => /publicando|subiendo|guardando|procesando|analizando/i.test(btn.textContent || ""));
-      } catch (_) { return false; }
+    const pingSupabase = async () => {
+      if (window.WT?.resumeSession) {
+        return window.WT.resumeSession({ force: true, reason: "app_resume" });
+      }
+      if (window.WT?.ensureSessionFresh) {
+        return window.WT.ensureSessionFresh({ force: true });
+      }
+      return window.WT?.supabase?.auth?.getSession?.();
     };
 
-    const wakeSupabaseSoftly = async () => {
+    const checkConnection = () => {
       if (recovering || document.hidden || !window.WT?.supabase || !pagesThatUseDB.test(location.pathname || "/")) return;
-      if (hasActiveCriticalFlow()) return;
+      const slept = hiddenAt ? Date.now() - hiddenAt : 0;
+      // Umbral 25 s: evita trabajo innecesario cuando el usuario solo cambió rápido de pestaña.
+      if (slept && slept < 25000) return;
 
       recovering = true;
-      try {
-        if (window.WT?.wakeSupabaseSession) await window.WT.wakeSupabaseSession({ reason: "pwa-resume" });
-        else if (window.WT?.ensureSessionFresh) await window.WT.ensureSessionFresh({ force: false });
-        else await window.WT.supabase.auth.getSession();
-        window.dispatchEvent(new CustomEvent("wt:app-resumed"));
-      } catch (_) {
-        // No recargar ni interrumpir formularios/subidas. La acción real reintentará sesión si recibe JWT/Auth.
-      } finally {
-        hiddenAt = 0;
-        recovering = false;
-      }
+      Promise.race([
+        pingSupabase(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 10000))
+      ])
+        .then(() => {
+          failCount = 0;
+          window.dispatchEvent(new CustomEvent("wt:app-resumed"));
+        })
+        .catch(() => {
+          failCount += 1;
+          window.dispatchEvent(new CustomEvent("wt:app-resume-retry", { detail: { failCount } }));
+
+          if (navigator.onLine === false) {
+            const now = Date.now();
+            if (now - lastWarningAt > 15000) {
+              lastWarningAt = now;
+              try { window.WT.toast("Sin conexión. Cuando vuelva internet, la app reconectará sola.", "warning"); } catch (_) {}
+            }
+            return;
+          }
+
+          // Nunca recargar automáticamente: si el usuario estaba escribiendo una publicación,
+          // configurando el perfil o revisando un panel, se conserva exactamente donde estaba.
+          if (failCount < 3) {
+            scheduleCheck(900 + (failCount * 900));
+            return;
+          }
+
+          const now = Date.now();
+          if (now - lastWarningAt > 20000) {
+            lastWarningAt = now;
+            try { window.WT.toast("La conexión está lenta. Intenta de nuevo; la app seguirá reconectando sin recargar.", "warning"); } catch (_) {}
+          }
+        })
+        .finally(() => {
+          hiddenAt = 0;
+          recovering = false;
+        });
     };
 
-    const scheduleWake = (delay = 700) => {
+    const scheduleCheck = (delay = 700) => {
       clearTimeout(checkTimer);
-      checkTimer = setTimeout(wakeSupabaseSoftly, delay);
+      checkTimer = setTimeout(checkConnection, delay);
     };
 
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) hiddenAt = Date.now();
-      else scheduleWake(900);
+      else scheduleCheck(650);
     });
-    window.addEventListener("pageshow", () => scheduleWake(500));
-    window.addEventListener("focus", () => scheduleWake(1100));
-    window.addEventListener("online", () => scheduleWake(500));
+    window.addEventListener("pageshow", e => {
+      if (e.persisted) hiddenAt = Date.now() - 26000;
+      scheduleCheck(650);
+    });
+    window.addEventListener("focus", () => scheduleCheck(750));
+    window.addEventListener("online", () => {
+      failCount = 0;
+      scheduleCheck(300);
+    });
   }
 
   function installFreezeProtection() {

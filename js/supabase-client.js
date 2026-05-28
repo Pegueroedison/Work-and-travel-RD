@@ -1,7 +1,7 @@
 (() => {
   const cfg = window.WT_SUPABASE_CONFIG || {};
   const canConnect = Boolean(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase);
-  const client = canConnect ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+  const rawClient = canConnect ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -11,51 +11,207 @@
     }
   }) : null;
 
+  const queryProxyCache = new WeakMap();
+  const storageProxyCache = new WeakMap();
+  const authProxyCache = new WeakMap();
+  const functionsProxyCache = new WeakMap();
+  const client = rawClient ? createResilientSupabaseClient(rawClient) : null;
+
   let lastSessionCheck = 0;
   let sessionRefreshPromise = null;
+  let resumeSessionPromise = null;
 
-  function authErrorLooksExpired(errorLike) {
-    const message = String(errorLike?.message || errorLike || "").toLowerCase();
+  function retryableSupabaseMessage(error) {
+    const parts = [
+      error?.message,
+      error?.error_description,
+      error?.hint,
+      error?.details,
+      error?.name,
+      typeof error === "string" ? error : ""
+    ].filter(Boolean);
+    return parts.join(" ").toLowerCase();
+  }
+
+  function isRetryableSupabaseProblem(error) {
+    const status = Number(error?.status || error?.statusCode || error?.code || 0);
+    const message = retryableSupabaseMessage(error);
     return Boolean(
+      status === 401 ||
+      status === 403 ||
       message.includes("jwt") ||
       message.includes("expired") ||
-      message.includes("refresh") ||
+      message.includes("refresh token") ||
       message.includes("session") ||
-      message.includes("auth") ||
-      message.includes("invalid token") ||
-      message.includes("not authenticated")
+      message.includes("auth session") ||
+      message.includes("not authenticated") ||
+      message.includes("unauthorized") ||
+      message.includes("failed to fetch") ||
+      message.includes("load failed") ||
+      message.includes("networkerror") ||
+      message.includes("network error") ||
+      message.includes("timeout") ||
+      message.includes("aborted") ||
+      message.includes("err_network")
     );
   }
 
-  function withTimeout(promise, ms = 6500, label = "operación") {
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} tardó demasiado`)), ms))
-    ]);
+  function resultNeedsSessionRetry(result) {
+    return Boolean(result?.error && isRetryableSupabaseProblem(result.error));
   }
 
-  function hasActiveCriticalFlow() {
+  async function runSupabaseOperation(action, { retry = true, forceRefresh = false } = {}) {
+    if (!rawClient) return action();
+    await ensureSessionFresh({ force: forceRefresh });
     try {
-      if (document.body?.dataset?.wtCriticalFlow === "1") return true;
-      return Array.from(document.querySelectorAll("button[disabled]")).some(btn =>
-        /publicando|subiendo|guardando|procesando|analizando/i.test(String(btn.textContent || ""))
-      );
-    } catch (_) {
-      return false;
+      const result = await action();
+      if (retry && resultNeedsSessionRetry(result)) {
+        await ensureSessionFresh({ force: true });
+        return await action();
+      }
+      return result;
+    } catch (error) {
+      if (retry && isRetryableSupabaseProblem(error)) {
+        await ensureSessionFresh({ force: true });
+        return await action();
+      }
+      throw error;
     }
   }
 
-  async function ensureSessionFresh({ force = false } = {}) {
-    if (!client) return null;
-    const now = Date.now();
+  function wrapQueryBuilder(builder) {
+    if (!builder || (typeof builder !== "object" && typeof builder !== "function")) return builder;
+    if (queryProxyCache.has(builder)) return queryProxyCache.get(builder);
 
-    if (!force && now - lastSessionCheck < 25000) {
-      try {
-        const { data } = await withTimeout(client.auth.getSession(), 4500, "getSession");
-        return data?.session || null;
-      } catch (_) {
-        return null;
+    const proxy = new Proxy(builder, {
+      get(target, prop, receiver) {
+        if (prop === "__raw") return target;
+        if (prop === "then") {
+          return (resolve, reject) => runSupabaseOperation(() => Promise.resolve(target))
+            .then(resolve, reject);
+        }
+        if (prop === "catch") {
+          return (reject) => proxy.then(undefined, reject);
+        }
+        if (prop === "finally") {
+          return (handler) => proxy.then(
+            value => Promise.resolve(typeof handler === "function" ? handler() : handler).then(() => value),
+            error => Promise.resolve(typeof handler === "function" ? handler() : handler).then(() => { throw error; })
+          );
+        }
+
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value !== "function") return value;
+        return (...args) => {
+          const output = value.apply(target, args);
+          return output && (typeof output === "object" || typeof output === "function") && typeof output.then === "function"
+            ? wrapQueryBuilder(output)
+            : output;
+        };
       }
+    });
+
+    queryProxyCache.set(builder, proxy);
+    return proxy;
+  }
+
+  function wrapPromiseMethod(target, methodName, options = {}) {
+    return (...args) => runSupabaseOperation(() => target[methodName](...args), options);
+  }
+
+  function createResilientStorageBucket(bucketApi) {
+    if (!bucketApi || (typeof bucketApi !== "object" && typeof bucketApi !== "function")) return bucketApi;
+    if (storageProxyCache.has(bucketApi)) return storageProxyCache.get(bucketApi);
+    const noRefreshMethods = new Set(["getPublicUrl"]);
+    const proxy = new Proxy(bucketApi, {
+      get(target, prop, receiver) {
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value !== "function") return value;
+        return (...args) => {
+          if (noRefreshMethods.has(String(prop))) return value.apply(target, args);
+          return runSupabaseOperation(() => value.apply(target, args));
+        };
+      }
+    });
+    storageProxyCache.set(bucketApi, proxy);
+    return proxy;
+  }
+
+  function createResilientStorageClient(storageApi) {
+    if (!storageApi || (typeof storageApi !== "object" && typeof storageApi !== "function")) return storageApi;
+    if (storageProxyCache.has(storageApi)) return storageProxyCache.get(storageApi);
+    const proxy = new Proxy(storageApi, {
+      get(target, prop, receiver) {
+        if (prop === "from") {
+          return (...args) => createResilientStorageBucket(target.from(...args));
+        }
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
+      }
+    });
+    storageProxyCache.set(storageApi, proxy);
+    return proxy;
+  }
+
+  function createResilientFunctionsClient(functionsApi) {
+    if (!functionsApi || (typeof functionsApi !== "object" && typeof functionsApi !== "function")) return functionsApi;
+    if (functionsProxyCache.has(functionsApi)) return functionsProxyCache.get(functionsApi);
+    const proxy = new Proxy(functionsApi, {
+      get(target, prop, receiver) {
+        if (prop === "invoke") return (...args) => runSupabaseOperation(() => target.invoke(...args));
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
+      }
+    });
+    functionsProxyCache.set(functionsApi, proxy);
+    return proxy;
+  }
+
+  function createResilientAuthClient(authApi) {
+    if (!authApi || (typeof authApi !== "object" && typeof authApi !== "function")) return authApi;
+    if (authProxyCache.has(authApi)) return authProxyCache.get(authApi);
+    const refreshBeforeMethods = new Set(["getSession", "getUser", "updateUser"]);
+    const passthroughMethods = new Set([
+      "onAuthStateChange", "refreshSession", "setSession", "exchangeCodeForSession",
+      "signInWithPassword", "signInWithOAuth", "signUp", "signOut",
+      "resetPasswordForEmail", "verifyOtp", "resend", "admin"
+    ]);
+    const proxy = new Proxy(authApi, {
+      get(target, prop, receiver) {
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value !== "function") return value;
+        const name = String(prop);
+        if (refreshBeforeMethods.has(name)) return (...args) => runSupabaseOperation(() => value.apply(target, args));
+        if (passthroughMethods.has(name)) return value.bind(target);
+        return (...args) => value.apply(target, args);
+      }
+    });
+    authProxyCache.set(authApi, proxy);
+    return proxy;
+  }
+
+  function createResilientSupabaseClient(baseClient) {
+    if (!baseClient) return null;
+    return new Proxy(baseClient, {
+      get(target, prop, receiver) {
+        if (prop === "__raw") return target;
+        if (prop === "from") return (...args) => wrapQueryBuilder(target.from(...args));
+        if (prop === "rpc") return (...args) => wrapQueryBuilder(target.rpc(...args));
+        if (prop === "storage") return createResilientStorageClient(target.storage);
+        if (prop === "functions") return createResilientFunctionsClient(target.functions);
+        if (prop === "auth") return createResilientAuthClient(target.auth);
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === "function" ? value.bind(target) : value;
+      }
+    });
+  }
+
+  async function ensureSessionFresh({ force = false } = {}) {
+    if (!rawClient) return null;
+    const now = Date.now();
+    if (!force && now - lastSessionCheck < 25000) {
+      const { data } = await rawClient.auth.getSession();
+      return data?.session || null;
     }
 
     if (sessionRefreshPromise) return sessionRefreshPromise;
@@ -63,7 +219,7 @@
     sessionRefreshPromise = (async () => {
       try {
         lastSessionCheck = Date.now();
-        const { data, error } = await withTimeout(client.auth.getSession(), 6500, "getSession");
+        const { data, error } = await rawClient.auth.getSession();
         if (error) throw error;
 
         const session = data?.session || null;
@@ -71,7 +227,7 @@
         const nearExpiry = Boolean(expiresAt && expiresAt - Date.now() < 4 * 60 * 1000);
 
         if (session && (force || nearExpiry)) {
-          const refreshed = await withTimeout(client.auth.refreshSession(), 6500, "refreshSession");
+          const refreshed = await rawClient.auth.refreshSession();
           if (refreshed?.error) throw refreshed.error;
           return refreshed?.data?.session || session;
         }
@@ -88,58 +244,42 @@
     return sessionRefreshPromise;
   }
 
-  async function wakeSupabaseSession({ reason = "manual" } = {}) {
-    if (!client || hasActiveCriticalFlow()) return null;
-    const session = await ensureSessionFresh({ force: false });
-    try {
-      window.dispatchEvent(new CustomEvent("wt:session-wake", { detail: { reason, hasSession: Boolean(session) } }));
-    } catch (_) {}
-    return session;
+  async function resumeSession({ force = true, reason = "manual" } = {}) {
+    if (!rawClient) return null;
+    if (resumeSessionPromise) return resumeSessionPromise;
+
+    resumeSessionPromise = (async () => {
+      const session = await ensureSessionFresh({ force });
+      try {
+        window.dispatchEvent(new CustomEvent("wt:supabase-session-ready", {
+          detail: { reason, userId: session?.user?.id || "", hasSession: Boolean(session) }
+        }));
+      } catch (_) {}
+      return session;
+    })().finally(() => { resumeSessionPromise = null; });
+
+    return resumeSessionPromise;
   }
 
   async function runWithSession(action, { retry = true } = {}) {
-    try {
-      if (!hasActiveCriticalFlow()) {
-        await withTimeout(ensureSessionFresh({ force: false }), 6500, "preparar sesión");
-      }
-    } catch (_) {}
-
-    try {
-      const result = await action();
-      if (result?.error && retry && authErrorLooksExpired(result.error)) {
-        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
-        return action();
-      }
-      return result;
-    } catch (error) {
-      if (retry && authErrorLooksExpired(error)) {
-        try { await withTimeout(ensureSessionFresh({ force: true }), 6500, "refrescar sesión"); } catch (_) {}
-        return action();
-      }
-      throw error;
-    }
+    return runSupabaseOperation(action, { retry });
   }
 
   function bindSessionKeepAlive() {
-    if (!client || window.__WT_SESSION_KEEPALIVE_BOUND__) return;
+    if (!rawClient || window.__WT_SESSION_KEEPALIVE_BOUND__) return;
     window.__WT_SESSION_KEEPALIVE_BOUND__ = true;
 
-    const softWake = () => {
-      if (document.visibilityState !== "visible") return;
-      if (hasActiveCriticalFlow()) return;
-      wakeSupabaseSession({ reason: "resume" }).catch(() => {});
-    };
-
+    const refresh = (reason = "resume") => resumeSession({ force: true, reason }).catch(() => null);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") setTimeout(softWake, 500);
+      if (document.visibilityState === "visible") refresh("visibility");
     });
-    window.addEventListener("pageshow", () => setTimeout(softWake, 350));
-    window.addEventListener("focus", () => setTimeout(softWake, 900));
-    window.addEventListener("online", () => setTimeout(softWake, 350));
+    window.addEventListener("focus", () => refresh("focus"));
+    window.addEventListener("online", () => refresh("online"));
+    window.addEventListener("pageshow", (event) => refresh(event?.persisted ? "bfcache" : "pageshow"));
 
     setInterval(() => {
-      if (document.visibilityState === "visible" && !hasActiveCriticalFlow()) ensureSessionFresh({ force: false });
-    }, 120000);
+      if (document.visibilityState === "visible") ensureSessionFresh({ force: false });
+    }, 90000);
   }
 
   const qs = (selector, root = document) => root.querySelector(selector);
@@ -503,8 +643,7 @@
         throw new Error("La subida de imágenes todavía no está configurada correctamente.");
       }
 
-      const { data: sessionData } = await client.auth.getSession();
-      const token = sessionData?.session?.access_token || "";
+      const token = await getAccessToken({ force: true });
       if (!token) throw new Error("Debes iniciar sesión para subir imágenes.");
 
       let blobToUpload = blob;
@@ -600,8 +739,7 @@
     if (!key) return { ok: true, skipped: true };
     if (!r2.ENABLED || !r2.UPLOAD_WORKER_URL) throw new Error("La eliminación de imágenes todavía no está configurada correctamente.");
 
-    const { data: sessionData } = await client.auth.getSession();
-    const token = sessionData?.session?.access_token || "";
+    const token = await getAccessToken({ force: true });
     if (!token) throw new Error("Debes iniciar sesión para borrar imágenes.");
 
     const deleteUrl = String(r2.UPLOAD_WORKER_URL).replace(/\/upload\/?$/, "/delete");
@@ -770,7 +908,7 @@
     if (session?.access_token) return session.access_token;
 
     try {
-      const { data } = await client.auth.getSession();
+      const { data } = await rawClient.auth.getSession();
       return data?.session?.access_token || "";
     } catch (_) {
       return "";
@@ -783,7 +921,7 @@
     if (session?.user) return session.user;
 
     try {
-      const { data } = await client.auth.getUser();
+      const { data } = await rawClient.auth.getUser();
       return data?.user || null;
     } catch (_) {
       return null;
@@ -814,7 +952,7 @@
   bindSessionKeepAlive();
 
   window.WT = {
-    cfg, supabase: client, canConnect, qs, qsa, page, ensureSessionFresh, wakeSupabaseSession, getAccessToken, runWithSession, bindSessionKeepAlive,
+    cfg, supabase: client, supabaseRaw: rawClient, canConnect, qs, qsa, page, ensureSessionFresh, resumeSession, getAccessToken, runWithSession, bindSessionKeepAlive,
     escapeHTML, formatDate, parseSettingValue, toast, showModal, confirmDialog,
     renderRoleBadge, renderUserBadges, publicUrl, isSupabaseStorageUrl, sanitizeImageUrl, r2KeyFromUrl, collectImageKeysFromRecord, deleteR2Image, deleteR2ImagesFromRecords, deleteGoogleDrivePdfsFromRecords, dataUrlToBlob, uploadBlob, getImageCompressionSettings, clearImageCompressionSettingsCache, getCurrentUser, getMyProfile, bindCommonUI
   };

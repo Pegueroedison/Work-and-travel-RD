@@ -63,10 +63,8 @@
   }
 
   async function adminQuery(action) {
-    // V4057: no forzar refresh antes de cada guardado.
-    // runWithSession solo reintenta si Supabase responde con error real de sesión/JWT.
+    if (WT.ensureSessionFresh) await WT.ensureSessionFresh({ force: true });
     if (WT.runWithSession) return WT.runWithSession(action);
-    try { await WT.wakeSupabaseSession?.({ reason: "admin-action" }); } catch (_) {}
     return action();
   }
 
