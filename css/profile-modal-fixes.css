@@ -1,0 +1,269 @@
+
+/* Work and Travel RD - perfil público e inputs oscuros */
+
+/* ==========================================================
+   PERFIL PÚBLICO
+   ========================================================== */
+.modal-card.public-profile-modal,
+.modal-card.wt-profile-final-modal {
+  overflow: hidden !important;
+}
+
+.modal-card.public-profile-modal .modal-body,
+.modal-card.wt-profile-final-modal .modal-body {
+  padding: 18px 22px 10px !important;
+}
+
+.modal-card.public-profile-modal .public-profile-card,
+.modal-card.wt-profile-final-modal .public-profile-card {
+  display: grid !important;
+  gap: 16px !important;
+}
+
+.modal-card.public-profile-modal .public-profile-hero,
+.modal-card.wt-profile-final-modal .public-profile-hero {
+  display: grid !important;
+  grid-template-columns: 104px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 18px !important;
+}
+
+.modal-card.public-profile-modal .public-profile-headtext,
+.modal-card.wt-profile-final-modal .public-profile-headtext {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.modal-card.public-profile-modal .public-profile-title-row,
+.modal-card.wt-profile-final-modal .public-profile-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.modal-card.public-profile-modal .public-profile-title-row h3,
+.modal-card.public-profile-modal .public-profile-headtext h3,
+.modal-card.wt-profile-final-modal .public-profile-title-row h3,
+.modal-card.wt-profile-final-modal .public-profile-headtext h3 {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.08 !important;
+  font-weight: 950 !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.modal-card.public-profile-modal .public-profile-username,
+.modal-card.wt-profile-final-modal .public-profile-username {
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+  transform: none !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.modal-card.public-profile-modal .public-profile-role,
+.modal-card.public-profile-modal .public-profile-badges,
+.modal-card.wt-profile-final-modal .public-profile-role,
+.modal-card.wt-profile-final-modal .public-profile-badges {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  transform: none !important;
+}
+
+.modal-card.public-profile-modal .public-profile-title-row .public-profile-friend-box,
+.modal-card.wt-profile-final-modal .public-profile-title-row .public-profile-friend-box {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+
+/* BIO: eliminar el rectángulo cuadrado real. La caja redonda es la única visible. */
+.modal-card.public-profile-modal .public-profile-bio-card,
+.modal-card.wt-profile-final-modal .public-profile-bio-card {
+  display: contents !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.modal-card.public-profile-modal .public-profile-bio,
+.modal-card.wt-profile-final-modal .public-profile-bio {
+  display: block !important;
+  margin: 0 !important;
+  padding: 18px !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
+  background: #f3f6fc !important;
+  color: #25334c !important;
+}
+
+html.wt-forum-dark .modal-card.public-profile-modal .public-profile-bio,
+html.wt-dark-mode .modal-card.public-profile-modal .public-profile-bio,
+body.wt-dark-mode .modal-card.public-profile-modal .public-profile-bio,
+html.wt-forum-dark .modal-card.wt-profile-final-modal .public-profile-bio,
+html.wt-dark-mode .modal-card.wt-profile-final-modal .public-profile-bio,
+body.wt-dark-mode .modal-card.wt-profile-final-modal .public-profile-bio {
+  background: #172134 !important;
+  color: #f5f8ff !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.modal-card.public-profile-modal .public-profile-bio-card::before,
+.modal-card.public-profile-modal .public-profile-bio-card::after,
+.modal-card.public-profile-modal .public-profile-bio::before,
+.modal-card.public-profile-modal .public-profile-bio::after,
+.modal-card.wt-profile-final-modal .public-profile-bio-card::before,
+.modal-card.wt-profile-final-modal .public-profile-bio-card::after,
+.modal-card.wt-profile-final-modal .public-profile-bio::before,
+.modal-card.wt-profile-final-modal .public-profile-bio::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ==========================================================
+   MI PERFIL - @USUARIO
+   ========================================================== */
+.profile-settings-modal .username-input-wrap,
+.profile-settings-modal .username-input-wrap.wt-username-final {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background: #f6f8fd !important;
+  border: 1px solid rgba(15,23,42,.12) !important;
+  box-shadow: none !important;
+}
+
+.profile-settings-modal .username-input-wrap > b,
+.profile-settings-modal .username-input-wrap > .username-at {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 42px !important;
+  min-width: 42px !important;
+  align-self: stretch !important;
+  background: transparent !important;
+  color: #0b2f6b !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  font-weight: 950 !important;
+}
+
+.profile-settings-modal .username-input-wrap input {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  color: #0f1b33 !important;
+  -webkit-text-fill-color: #0f1b33 !important;
+  box-shadow: none !important;
+}
+
+html.wt-forum-dark .profile-settings-modal .username-input-wrap,
+html.wt-dark-mode .profile-settings-modal .username-input-wrap,
+body.wt-dark-mode .profile-settings-modal .username-input-wrap {
+  background: rgba(15,23,42,.78) !important;
+  border-color: rgba(148,163,184,.24) !important;
+}
+
+html.wt-forum-dark .profile-settings-modal .username-input-wrap > b,
+html.wt-forum-dark .profile-settings-modal .username-input-wrap > .username-at,
+html.wt-dark-mode .profile-settings-modal .username-input-wrap > b,
+html.wt-dark-mode .profile-settings-modal .username-input-wrap > .username-at,
+body.wt-dark-mode .profile-settings-modal .username-input-wrap > b,
+body.wt-dark-mode .profile-settings-modal .username-input-wrap > .username-at {
+  color: #93c5fd !important;
+  background: transparent !important;
+}
+
+html.wt-forum-dark .profile-settings-modal .username-input-wrap input,
+html.wt-dark-mode .profile-settings-modal .username-input-wrap input,
+body.wt-dark-mode .profile-settings-modal .username-input-wrap input {
+  color: #e8f1ff !important;
+  -webkit-text-fill-color: #e8f1ff !important;
+  caret-color: #93c5fd !important;
+}
+
+/* ==========================================================
+   LOGIN / MODALES - INPUTS EN MODO OSCURO Y AUTOFILL
+   ========================================================== */
+html.wt-forum-dark .modal-card input,
+html.wt-forum-dark .modal-card textarea,
+html.wt-dark-mode .modal-card input,
+html.wt-dark-mode .modal-card textarea,
+body.wt-dark-mode .modal-card input,
+body.wt-dark-mode .modal-card textarea {
+  background: rgba(15,23,42,.78) !important;
+  color: #e8f1ff !important;
+  -webkit-text-fill-color: #e8f1ff !important;
+  caret-color: #93c5fd !important;
+  border-color: rgba(148,163,184,.24) !important;
+  box-shadow: none !important;
+}
+
+html.wt-forum-dark .modal-card input::placeholder,
+html.wt-dark-mode .modal-card input::placeholder,
+body.wt-dark-mode .modal-card input::placeholder {
+  color: rgba(226,232,240,.55) !important;
+  -webkit-text-fill-color: rgba(226,232,240,.55) !important;
+}
+
+html.wt-forum-dark .modal-card input:-webkit-autofill,
+html.wt-forum-dark .modal-card input:-webkit-autofill:hover,
+html.wt-forum-dark .modal-card input:-webkit-autofill:focus,
+html.wt-dark-mode .modal-card input:-webkit-autofill,
+html.wt-dark-mode .modal-card input:-webkit-autofill:hover,
+html.wt-dark-mode .modal-card input:-webkit-autofill:focus,
+body.wt-dark-mode .modal-card input:-webkit-autofill,
+body.wt-dark-mode .modal-card input:-webkit-autofill:hover,
+body.wt-dark-mode .modal-card input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #e8f1ff !important;
+  caret-color: #93c5fd !important;
+  -webkit-box-shadow: 0 0 0 1000px rgba(15,23,42,.92) inset !important;
+  box-shadow: 0 0 0 1000px rgba(15,23,42,.92) inset !important;
+  transition: background-color 999999s ease-in-out 0s !important;
+}
+
+@media (max-width: 520px) {
+  .modal-card.public-profile-modal .public-profile-hero,
+  .modal-card.wt-profile-final-modal .public-profile-hero {
+    grid-template-columns: 84px minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+}

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Work and Travel RD</title>
+  <meta name="description" content="Plataforma dominicana para estudiantes del programa Summer Work and Travel / Visa J1." />
+  <link rel="icon" href="images/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <meta name="theme-color" content="#062b63" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="W&T RD" />
+  <link rel="stylesheet" href="css/style.css?v=4035" />
+  <link rel="stylesheet" href="css/ui-polish.css?v=4035" />
+  <link rel="stylesheet" href="css/app-overrides.css?v=4035" />
+  <link rel="stylesheet" href="css/desktop.css?v=4035" />
+<link rel="stylesheet" href="css/profile-modal-fixes.css?v=4035">
+</head>
+<body data-page="home">
+  <header class="app-header" id="appHeader">
+    <a class="brand" href="index.html" aria-label="Work and Travel RD">
+      <img id="siteLogo" src="images/placeholder-logo.png" alt="Logo Work and Travel RD" onerror="this.onerror=null;this.src=\'images/placeholder-logo.png\';" />
+      <span id="siteName">Work and Travel RD</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">☰</button>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html">Inicio</a>
+      <a href="servicios.html">Servicios J1</a>
+      <a href="cursos.html">Cursos</a>
+      <a href="foro.html">Foro</a>
+      <a href="practica-consular.html">Práctica consular</a>
+    </nav>
+    <div class="auth-area" id="authArea"></div>
+  </header>
+
+  <main>
+    <section class="hero" id="heroCarousel" aria-label="Carrusel principal">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-overlay" id="heroOverlay"></div>
+      <div class="hero-content container">
+        <span class="eyebrow hero-eyebrow" hidden></span>
+        <h1 id="heroTitle">Prepárate para tu experiencia Work and Travel</h1>
+        <p id="heroSubtitle">Guías, cursos, foro y práctica consular en una plataforma mobile-first para estudiantes dominicanos.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" id="heroBtn1" hidden></a>
+          <a class="btn btn-soft" id="heroBtn2" hidden></a>
+        </div>
+      </div>
+      <div class="hero-dots" id="heroDots" aria-label="Controles del carrusel"></div>
+    </section>
+
+    <section class="container section about-section dynamic-about-section" id="aboutSection">
+      <div class="section-head about-section-head">
+        <div>
+          <span class="eyebrow" id="aboutEyebrow">Sobre nosotros</span>
+          <h2 id="aboutTitle">Una comunidad dominicana para prepararte mejor</h2>
+        </div>
+        <a class="link-pill" id="aboutBtn" href="servicios.html">Conocer servicios</a>
+      </div>
+      <p class="about-lead" id="aboutText">Work and Travel RD reúne orientación, práctica consular, servicios, cursos y experiencias reales para estudiantes dominicanos que quieren vivir su proceso J1 con más claridad.</p>
+      <div class="about-dynamic-grid" id="aboutDynamicGrid">
+        <article class="about-dynamic-card featured"><span>👥</span><h3>Quiénes somos</h3><p>Una comunidad creada para orientar estudiantes dominicanos del programa Summer Work and Travel.</p></article>
+        <article class="about-dynamic-card"><span>🎯</span><h3>Objetivo</h3><p>Ayudar a que cada estudiante tenga información clara, práctica y organizada.</p></article>
+        <article class="about-dynamic-card"><span>🚀</span><h3>Visión</h3><p>Ser una plataforma de referencia para preparación, comunidad y acompañamiento J1.</p></article>
+        <article class="about-dynamic-card"><span>🏁</span><h3>Metas</h3><p>Unir experiencias reales, cursos, foro y herramientas útiles en un solo lugar.</p></article>
+      </div>
+      <div class="about-social-row" id="homeSocialLinks"></div>
+    </section>
+
+    <section class="container section" id="announcementsSection">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Avisos</span>
+          <h2>Anuncios importantes</h2>
+        </div>
+      </div>
+      <div class="cards-grid" id="announcementCards"></div>
+    </section>
+
+    <section class="container section" id="servicios">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Servicios</span>
+          <h2>Todo para tu proceso J1</h2>
+        </div>
+        <a class="link-pill" href="servicios.html">Ver servicios</a>
+      </div>
+      <div class="cards-grid" id="serviceCards"></div>
+    </section>
+
+    <section class="container section section-alt" id="cursos">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Cursos de inglés</span>
+          <h2>Mejora tu entrevista y comunicación</h2>
+        </div>
+        <a class="link-pill" href="cursos.html">Ver cursos</a>
+      </div>
+      <div class="cards-grid" id="courseCards"></div>
+    </section>
+
+    <section class="container section">
+      <div class="cta-card">
+        <div>
+          <span class="eyebrow">Práctica consular</span>
+          <h2>Simula preguntas reales desde tu celular</h2>
+          <p>Escucha, responde, mira traducciones y marca tus preguntas practicadas.</p>
+        </div>
+        <a class="btn btn-primary" href="practica-consular.html">Practicar ahora</a>
+      </div>
+    </section>
+
+    <section class="container section" id="foro">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Comunidad</span>
+          <h2>Últimas publicaciones del foro</h2>
+        </div>
+        <a class="link-pill" href="foro.html">Abrir foro</a>
+      </div>
+      <div class="post-list" id="latestPosts"></div>
+    </section>
+  </main>
+  <footer class="app-footer" id="appFooter">
+    <div class="container footer-grid">
+      <div>
+        <strong>Work and Travel RD</strong>
+        <p id="footerText">Comunidad y herramientas para estudiantes dominicanos del programa Summer Work and Travel.</p>
+      </div>
+      <div class="footer-links">
+        <a href="servicios.html">Servicios</a>
+        <a href="cursos.html">Cursos</a>
+        <a href="foro.html">Foro</a>
+        <a href="practica-consular.html">Práctica</a>
+        <a href="legal.html#terminos">Términos y condiciones</a>
+        <a href="legal.html#privacidad">Política de privacidad</a>
+        <a href="legal.html#aviso-legal">Aviso legal</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" class="toast-root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js?v=4035"></script>
+  <script src="js/supabase-client.js?v=4035"></script>
+  <script src="js/theme.js?v=4035"></script>
+  <script src="js/image-compressor.js?v=4035"></script>
+  <script src="js/image-editor.js?v=4035"></script>
+  <script src="js/auth.js?v=4035"></script>
+  <script src="js/content.js?v=4035"></script>
+  <script src="js/site-dynamic.js?v=4035"></script>
+  <script src="js/main.js?v=4035"></script>
+  <script src="js/swipe-navigation.js?v=4035"></script>
+  <script src="js/pwa.js?v=4035"></script>
+</body>
+</html>

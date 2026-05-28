@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Publicación | Work and Travel RD</title>
+  <link rel="icon" href="images/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#062b63" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="W&T RD" />
+  <link rel="stylesheet" href="css/style.css?v=4035" />
+  <link rel="stylesheet" href="css/foro.css?v=4035" />
+
+  <script>
+    (function(){
+      try {
+        var prefs = JSON.parse(localStorage.getItem('wt_user_preferences') || '{}');
+        var dark = prefs && (prefs.forum_dark_mode === true || prefs.forum_dark_mode === 'true' || prefs.dark_mode === true || prefs.dark_mode === 'true');
+        if (dark) {
+          document.documentElement.classList.add('wt-forum-dark');
+          document.documentElement.dataset.wtStatusPatch = 'dark';
+          document.documentElement.style.background = '#060b14';
+          document.documentElement.style.backgroundColor = '#060b14';
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', '#060b14');
+          var apple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+          if (apple) apple.setAttribute('content', 'black-translucent');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="css/ui-polish.css?v=4035" />
+  <link rel="stylesheet" href="css/forum-final.css?v=4035" />
+  <link rel="stylesheet" href="css/forum-reference.css?v=4035" />
+  <link rel="stylesheet" href="css/app-overrides.css?v=4035" />
+  <link rel="stylesheet" href="css/desktop.css?v=4035" />
+  <link rel="stylesheet" href="css/forum-dark.css?v=4035" />
+<link rel="stylesheet" href="css/profile-modal-fixes.css?v=4035">
+</head>
+<body data-page="post" class="reddit-page reddit-post-page">
+  <header class="app-header">
+    <a class="brand" href="index.html"><img id="siteLogo" src="images/placeholder-logo.png" alt="Logo" onerror="this.onerror=null;this.src=\'images/placeholder-logo.png\';" /><span id="siteName">Work and Travel RD</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">☰</button>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html">Inicio</a><a href="servicios.html">Servicios J1</a><a href="cursos.html">Cursos</a><a href="foro.html">Foro</a><a href="practica-consular.html">Práctica consular</a>
+    </nav>
+    <div class="auth-area" id="authArea"></div>
+  </header>
+  <main class="reddit-app-shell reddit-detail-shell">
+    <a class="reddit-back-link" href="foro.html">← Volver al foro</a>
+    <article id="postDetail" class="post-detail-card skeleton-card">Cargando publicación...</article>
+    <section class="comment-box reddit-comment-composer instagram-comment-composer" id="commentComposer" aria-label="Escribir comentario">
+      <div class="replying-to" id="replyingToBox" hidden>
+        <span id="replyingToText">Respondiendo</span>
+        <button type="button" id="clearReplyBtn">Cancelar</button>
+      </div>
+      <div class="forum-selected-images ig-selected-images" data-comment-selected-images hidden></div>
+      <div class="ig-reply-preview" id="replyPreviewBox" hidden>
+        <img id="replyPreviewAvatar" src="images/placeholder-avatar.png" alt="" aria-hidden="true" />
+        <div class="ig-reply-preview__content">
+          <strong id="replyPreviewAuthor">Comentario</strong>
+          <p id="replyPreviewText">Comentario seleccionado</p>
+        </div>
+        <button class="ig-reply-preview__close" id="clearReplyPreviewBtn" type="button" aria-label="Quitar respuesta">×</button>
+      </div>
+      <div class="ig-comment-input-row">
+        <img class="ig-comment-avatar" id="commentComposerAvatar" src="images/placeholder-avatar.png" alt="Tu foto de perfil" />
+        <textarea class="input" id="commentBody" rows="1" placeholder="¿Qué opinas sobre esto?" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"></textarea>
+        <label class="comment-image-input ig-image-btn" aria-label="Agregar imagen">
+          <span>Imagen</span>
+          <input id="commentImageInput" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <button class="btn btn-primary ig-send-btn" id="sendCommentBtn" type="button">Enviar</button>
+      </div>
+    </section>
+    <section class="comments-section">
+      <div class="comments-toolbar"><span>Comentarios</span><input class="reddit-comment-search" placeholder="Buscar comentarios" disabled></div>
+      <div class="comment-list" id="commentsList"></div>
+    </section>
+  </main>
+  <footer class="app-footer" id="appFooter">
+    <div class="container footer-grid">
+      <div>
+        <strong>Work and Travel RD</strong>
+        <p id="footerText">Comunidad y herramientas para estudiantes dominicanos del programa Summer Work and Travel.</p>
+      </div>
+      <div class="footer-links">
+        <a href="servicios.html">Servicios</a>
+        <a href="cursos.html">Cursos</a>
+        <a href="foro.html">Foro</a>
+        <a href="practica-consular.html">Práctica</a>
+        <a href="legal.html#terminos">Términos y condiciones</a>
+        <a href="legal.html#privacidad">Política de privacidad</a>
+        <a href="legal.html#aviso-legal">Aviso legal</a>
+      </div>
+    </div>
+  </footer>
+  <div id="modalRoot"></div><div id="toastRoot" class="toast-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js?v=4035"></script><script src="js/supabase-client.js?v=4035"></script><script src="js/theme.js?v=4035"></script><script src="js/image-compressor.js?v=4035"></script>
+  <script src="js/image-editor.js?v=4035"></script><script src="js/auth.js?v=4035"></script><script src="js/content.js?v=4035"></script><script src="js/forum.js?v=4035"></script>
+  <script src="js/site-dynamic.js?v=4035"></script><script src="js/pwa.js?v=4035"></script>
+</body>
+</html>

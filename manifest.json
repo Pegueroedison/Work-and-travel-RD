@@ -1,0 +1,25 @@
+{
+  "name": "Work and Travel RD",
+  "short_name": "W&T RD",
+  "description": "Plataforma dominicana para estudiantes del programa Summer Work and Travel / Visa J1.",
+  "lang": "es",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7fb",
+  "theme_color": "#062b63",
+  "categories": ["education", "travel", "social"],
+  "icons": [
+    { "src": "images/icon-144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "images/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "images/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "images/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Foro", "short_name": "Foro", "description": "Abrir el foro de estudiantes", "url": "./foro.html", "icons": [{ "src": "images/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Práctica consular", "short_name": "Práctica", "description": "Practicar preguntas de entrevista J1", "url": "./practica-consular.html", "icons": [{ "src": "images/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Servicios", "short_name": "Servicios", "description": "Ver servicios J1 disponibles", "url": "./servicios.html", "icons": [{ "src": "images/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

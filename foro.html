@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Foro | Work and Travel RD</title>
+  <link rel="icon" href="images/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <meta name="theme-color" content="#062b63" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="W&T RD" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=4035" />
+  <link rel="stylesheet" href="css/foro-redesign.css?v=4035" />
+
+  <script>
+    (function(){
+      try {
+        var prefs = JSON.parse(localStorage.getItem('wt_user_preferences') || '{}');
+        var dark = prefs && (prefs.forum_dark_mode === true || prefs.forum_dark_mode === 'true' || prefs.dark_mode === true || prefs.dark_mode === 'true');
+        if (dark) {
+          document.documentElement.classList.add('wt-forum-dark');
+          document.documentElement.dataset.wtStatusPatch = 'dark';
+          document.documentElement.style.background = '#0b0f14';
+          document.documentElement.style.backgroundColor = '#0b0f14';
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', '#0b0f14');
+          var apple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+          if (apple) apple.setAttribute('content', 'default');
+        }
+      } catch(e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="css/app-overrides.css?v=4035" />
+  <link rel="stylesheet" href="css/desktop.css?v=4035" />
+  <link rel="stylesheet" href="css/forum-dark.css?v=4035" />
+<link rel="stylesheet" href="css/profile-modal-fixes.css?v=4035">
+</head>
+
+<body data-page="forum" class="forum-redesign-page">
+
+  
+  <header class="app-header reddit-site-header">
+    <a class="brand" href="index.html">
+      <img id="siteLogo" src="images/placeholder-logo.png" alt="Logo" onerror="this.onerror=null;this.src=\'images/placeholder-logo.png\';" />
+      <span id="siteName">Work and Travel RD</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">☰</button>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html">Inicio</a>
+      <a href="servicios.html">Servicios J1</a>
+      <a href="cursos.html">Cursos</a>
+      <a href="foro.html">Foro</a>
+      <a href="practica-consular.html">Práctica consular</a>
+    </nav>
+    <div class="auth-area" id="authArea"></div>
+  </header>
+  
+
+  <main class="forum-app" aria-label="Foro Work and Travel RD">
+
+    
+    <div class="fa-tabs-wrap" id="forumTabsToolbar" aria-label="Filtros del foro">
+      <div class="fa-tabs" role="group">
+        <button class="fa-tab active" data-sort-short="recent">Recientes</button>
+        <button class="fa-tab" data-sort-short="popular">Populares</button>
+        <button class="fa-tab" data-sort-short="commented">Comentadas</button>
+        <button class="fa-tab fa-tab--publish" id="newPostBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          Publicar
+        </button>
+      </div>
+    </div>
+
+    
+    <div class="fa-search-wrap">
+      <div class="fa-search-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          id="forumSearch"
+          type="search"
+          placeholder="Buscar en el foro…"
+          autocomplete="off"
+          aria-label="Buscar publicaciones"
+        />
+      </div>
+      <button class="fa-filter-btn" id="filterCategoryBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+          <line x1="11" y1="18" x2="13" y2="18"/>
+        </svg>
+        <span id="filterBtnLabel">Todas</span>
+      </button>
+    </div>
+
+    
+    <select class="fa-hidden-input" id="forumCategory" aria-label="Categoría del foro">
+      <option value="">Todas las categorías</option>
+    </select>
+    <select class="fa-hidden-input" id="forumSort" aria-label="Ordenar publicaciones">
+      <option value="recent">Más recientes</option>
+      <option value="popular">Más votadas</option>
+      <option value="commented">Más comentadas</option>
+    </select>
+
+    
+    <div
+      class="fa-compose"
+      id="quickComposer"
+      role="button"
+      tabindex="0"
+      aria-label="Crear publicación en el foro"
+    >
+      <div class="fa-compose__avatar">
+        <img id="quickComposerAvatar" src="images/placeholder-avatar.png" alt="Tu foto de perfil" />
+      </div>
+      <div class="fa-compose__text">
+        <strong>¿Qué quieres publicar?</strong>
+        Pregunta o comparte tu experiencia.
+      </div>
+      <div class="fa-compose__plus" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14M5 12h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    
+    <p class="fa-section-label">Publicaciones recientes</p>
+
+    
+    <div class="fa-posts" id="forumPosts" role="feed" aria-label="Publicaciones del foro"></div>
+
+    
+    <div class="fa-load-wrap">
+      <button class="fa-load-more" id="loadMorePosts" type="button">Cargar más</button>
+    </div>
+
+    
+    <aside class="fa-sidebar-ghost" aria-hidden="true" hidden>
+      <div id="sidebarCategories"></div>
+      <button id="sidebarPostBtn" tabindex="-1">Crear publicación</button>
+      <strong id="sidebarPostCount"></strong>
+    </aside>
+
+  </main>
+
+  
+  <div class="fa-filter-panel" id="filterPanel" role="dialog" aria-modal="true" aria-label="Filtrar por categoría" hidden>
+    <div class="fa-filter-panel__backdrop" id="filterPanelBackdrop"></div>
+    <div class="fa-filter-panel__sheet">
+      <div class="fa-filter-panel__handle"></div>
+      <p class="fa-filter-panel__title">Filtrar por categoría</p>
+      <div class="fa-filter-panel__chips" id="filterChips">
+        <button class="fa-chip active" data-category-filter="" type="button">Todas</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer" id="appFooter">
+    <div class="container footer-grid">
+      <div>
+        <strong>Work and Travel RD</strong>
+        <p id="footerText">Comunidad y herramientas para estudiantes dominicanos del programa Summer Work and Travel.</p>
+      </div>
+      <div class="footer-links">
+        <a href="servicios.html">Servicios</a>
+        <a href="cursos.html">Cursos</a>
+        <a href="foro.html">Foro</a>
+        <a href="practica-consular.html">Práctica</a>
+        <a href="legal.html#terminos">Términos y condiciones</a>
+        <a href="legal.html#privacidad">Política de privacidad</a>
+        <a href="legal.html#aviso-legal">Aviso legal</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" class="toast-root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js?v=4035"></script>
+  <script src="js/supabase-client.js?v=4035"></script>
+  <script src="js/theme.js?v=4035"></script>
+  <script src="js/image-compressor.js?v=4035"></script>
+  <script src="js/image-editor.js?v=4035"></script>
+  <script src="js/auth.js?v=4035"></script>
+  <script src="js/content.js?v=4035"></script>
+  <script src="js/forum.js?v=4035"></script>
+  <script src="js/site-dynamic.js?v=4035"></script>
+  <script src="js/swipe-navigation.js?v=4035"></script>
+  <script src="js/pwa.js?v=4035"></script>
+
+  <script>
+    /* ── Filter bottom-sheet ── */
+    (function () {
+      const btn    = document.getElementById('filterCategoryBtn');
+      const panel  = document.getElementById('filterPanel');
+      const bdrop  = document.getElementById('filterPanelBackdrop');
+      const chips  = document.getElementById('filterChips');
+      const label  = document.getElementById('filterBtnLabel');
+      const select = document.getElementById('forumCategory');
+
+      function openPanel() {
+        panel.hidden = false;
+        btn.setAttribute('aria-expanded', 'true');
+        requestAnimationFrame(() => panel.classList.add('is-open'));
+      }
+      function closePanel() {
+        panel.classList.remove('is-open');
+        btn.setAttribute('aria-expanded', 'false');
+        setTimeout(() => { panel.hidden = true; }, 260);
+      }
+
+      btn.addEventListener('click', () => panel.hidden ? openPanel() : closePanel());
+      bdrop.addEventListener('click', closePanel);
+
+      /* Build chips from the category select once forum.js populates it */
+      function syncChips() {
+        const options = Array.from(select.options);
+        chips.innerHTML = '';
+        options.forEach(opt => {
+          const ch = document.createElement('button');
+          ch.className = 'fa-chip' + (select.value === opt.value ? ' active' : '');
+          ch.dataset.categoryFilter = opt.value;
+          ch.type = 'button';
+          ch.textContent = opt.textContent;
+          chips.appendChild(ch);
+        });
+      }
+
+      /* Observer: rebuild chips when forum.js adds <option> elements */
+      new MutationObserver(syncChips).observe(select, { childList: true });
+      syncChips();
+
+      chips.addEventListener('click', (e) => {
+        const ch = e.target.closest('.fa-chip');
+        if (!ch) return;
+        chips.querySelectorAll('.fa-chip').forEach(c => c.classList.remove('active'));
+        ch.classList.add('active');
+        select.value = ch.dataset.categoryFilter;
+        label.textContent = ch.textContent.trim() || 'Todas';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        closePanel();
+      });
+    })();
+  </script>
+
+</body>
+</html>

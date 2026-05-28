@@ -1,0 +1,965 @@
+/*
+ * ============================================================
+ *  FORO REDESIGN — Work and Travel RD
+ *  Archivo: css/foro-redesign.css
+ *
+ *  Alcance: todo prefijado con .forum-app  (o .fa-)
+ *  No toca .app-header ni ningún componente global del sitio.
+ * ============================================================
+ */
+
+/* ── Tokens de diseño ── */
+.forum-app {
+  --fa-ink:         #0d1117;
+  --fa-ink-2:       #3b4556;
+  --fa-ink-3:       #8492a6;
+  --fa-surface:     #f5f6fa;
+  --fa-card:        #ffffff;
+  --fa-accent:      #3d5afe;
+  --fa-accent-soft: #eef0ff;
+  --fa-accent-2:    #00c9a7;
+  --fa-tag-bg:      #e8f4fd;
+  --fa-tag-fg:      #1565c0;
+  --fa-border:      #e4e8f0;
+  --fa-shadow-sm:   0 1px 4px rgba(13,17,23,.06);
+  --fa-shadow-md:   0 4px 20px rgba(13,17,23,.08);
+  --fa-shadow-hover:0 8px 32px rgba(61,90,254,.14);
+  --fa-radius:      18px;
+  --fa-radius-sm:   12px;
+  --fa-radius-pill: 999px;
+}
+
+/* ── Dark mode ── */
+html.wt-forum-dark .forum-app {
+  --fa-ink:         #e2e8f0;
+  --fa-ink-2:       #94a3b8;
+  --fa-ink-3:       #64748b;
+  --fa-surface:     #0b0f14;
+  --fa-card:        #161b22;
+  --fa-border:      #21262d;
+  --fa-tag-bg:      #1c2333;
+  --fa-tag-fg:      #58a6ff;
+  --fa-accent-soft: #1a2240;
+  --fa-shadow-sm:   none;
+  --fa-shadow-md:   none;
+  --fa-shadow-hover:none;
+}
+
+/* ── Layout base ── */
+.forum-app {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  background: var(--fa-surface);
+  color: var(--fa-ink);
+  min-height: 60vh;
+  padding-bottom: 48px;
+}
+
+/* Inputs ocultos que usa forum.js internamente */
+.fa-hidden-input {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────
+   TABS DE ORDENAMIENTO
+───────────────────────────────────── */
+.fa-tabs-wrap {
+  padding: 14px 16px 0;
+  background: var(--fa-surface);
+  position: sticky;
+  top: var(--header-h, 64px);
+  z-index: 40;
+  border-bottom: 1px solid var(--fa-border);
+}
+
+.fa-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 14px;
+}
+.fa-tabs::-webkit-scrollbar { display: none; }
+
+.fa-tab {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: var(--fa-radius-pill);
+  border: 1.5px solid var(--fa-border);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
+  background: var(--fa-card);
+  color: var(--fa-ink-3);
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-tab:active   { transform: scale(.96); }
+
+.fa-tab.active,
+.fa-tab.is-active {
+  background: var(--fa-accent);
+  color: #fff;
+  border-color: var(--fa-accent);
+  box-shadow: 0 2px 12px rgba(61,90,254,.25);
+}
+
+.fa-tab--publish {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  background: var(--fa-accent-soft);
+  color: var(--fa-accent);
+  border-color: transparent;
+  font-weight: 700;
+}
+.fa-tab--publish svg {
+  width: 14px; height: 14px;
+  stroke: currentColor;
+}
+.fa-tab--publish:hover,
+.fa-tab--publish:focus-visible {
+  background: var(--fa-accent);
+  color: #fff;
+}
+
+/* ─────────────────────────────────────
+   BUSCADOR
+───────────────────────────────────── */
+.fa-search-wrap {
+  padding: 14px 16px;
+  background: var(--fa-surface);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.fa-search-field {
+  flex: 1;
+  height: 46px;
+  background: var(--fa-card);
+  border: 1.5px solid var(--fa-border);
+  border-radius: var(--fa-radius-sm);
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  box-shadow: var(--fa-shadow-sm);
+  transition: border-color .15s, box-shadow .15s;
+}
+.fa-search-field:focus-within {
+  border-color: var(--fa-accent);
+  box-shadow: 0 0 0 3px var(--fa-accent-soft);
+}
+.fa-search-field svg {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: var(--fa-ink-3);
+}
+.fa-search-field input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--fa-ink);
+  background: transparent;
+}
+.fa-search-field input::placeholder { color: var(--fa-ink-3); }
+
+.fa-filter-btn {
+  height: 46px;
+  padding: 0 16px;
+  background: var(--fa-card);
+  border: 1.5px solid var(--fa-border);
+  border-radius: var(--fa-radius-sm);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fa-ink-2);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  box-shadow: var(--fa-shadow-sm);
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.fa-filter-btn svg { width: 14px; height: 14px; }
+.fa-filter-btn[aria-expanded="true"] {
+  background: var(--fa-accent-soft);
+  border-color: var(--fa-accent);
+  color: var(--fa-accent);
+}
+
+/* ─────────────────────────────────────
+   BANNER CREAR PUBLICACIÓN
+───────────────────────────────────── */
+.fa-compose {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, #1a237e 0%, #3d5afe 100%);
+  border-radius: var(--fa-radius);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  box-shadow: 0 4px 20px rgba(61,90,254,.3);
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Círculos decorativos */
+.fa-compose::before {
+  content: '';
+  position: absolute; right: -20px; top: -20px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.07);
+  pointer-events: none;
+}
+.fa-compose::after {
+  content: '';
+  position: absolute; right: 30px; bottom: -30px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+  pointer-events: none;
+}
+.fa-compose:active { transform: scale(.98); box-shadow: 0 2px 12px rgba(61,90,254,.2); }
+
+.fa-compose__avatar {
+  width: 42px; height: 42px;
+  background: rgba(255,255,255,.15);
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.fa-compose__avatar img {
+  width: 42px; height: 42px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.fa-compose__text {
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255,255,255,.7);
+  position: relative; z-index: 1;
+  min-width: 0;
+}
+.fa-compose__text strong {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.fa-compose__plus {
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.fa-compose__plus svg { width: 20px; height: 20px; }
+
+/* ─────────────────────────────────────
+   ETIQUETA DE SECCIÓN
+───────────────────────────────────── */
+.fa-section-label {
+  padding: 4px 16px 10px;
+  font-family: 'Sora', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--fa-ink-3);
+}
+
+/* ─────────────────────────────────────
+   TARJETAS DE PUBLICACIÓN
+───────────────────────────────────── */
+.fa-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+/* Tarjeta */
+.fa-post-card {
+  background: var(--fa-card);
+  border-radius: var(--fa-radius);
+  padding: 16px 18px;
+  border: 1.5px solid var(--fa-border);
+  box-shadow: var(--fa-shadow-sm);
+  cursor: pointer;
+  transition: box-shadow .22s, transform .15s;
+  animation: fa-fadeUp .35s ease both;
+  -webkit-tap-highlight-color: transparent;
+}
+.fa-post-card:active {
+  transform: scale(.987);
+  box-shadow: var(--fa-shadow-hover);
+}
+
+@keyframes fa-fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Cabecera de tarjeta */
+.fa-post-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fa-post-card__avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8eeff, #c5ccff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.fa-post-card__avatar img {
+  width: 38px; height: 38px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.fa-post-card__avatar svg {
+  width: 20px; height: 20px;
+  fill: var(--fa-accent);
+}
+
+.fa-post-card__meta       { flex: 1; min-width: 0; }
+.fa-post-card__meta-top   {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.fa-post-card__author {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fa-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+}
+
+.fa-post-card__tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--fa-radius-pill);
+  background: var(--fa-tag-bg);
+  color: var(--fa-tag-fg);
+  white-space: nowrap;
+  letter-spacing: .01em;
+}
+.fa-post-card__tag--green   { background: #e6f9f5; color: #00796b; }
+.fa-post-card__tag--orange  { background: #fff3e0; color: #e65100; }
+
+.fa-post-card__time {
+  font-size: 12px;
+  color: var(--fa-ink-3);
+  margin-top: 2px;
+}
+
+/* Botón "más opciones" */
+.fa-post-card__more {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--fa-ink-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+  flex-shrink: 0;
+  font-size: 18px;
+  letter-spacing: -2px;
+}
+.fa-post-card__more:active { background: var(--fa-surface); }
+
+/* Título y preview */
+.fa-post-card__title {
+  font-family: 'Sora', sans-serif;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--fa-ink);
+  margin: 0 0 7px;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+.fa-post-card__title a { color: inherit; text-decoration: none; }
+
+.fa-post-card__preview {
+  font-size: 13.5px;
+  color: var(--fa-ink-2);
+  line-height: 1.55;
+  margin: 0 0 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Divisor */
+.fa-post-card__divider {
+  height: 1px;
+  background: var(--fa-border);
+  margin: 13px 0;
+}
+
+/* Acciones */
+.fa-post-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.fa-post-card__actions::-webkit-scrollbar { display: none; }
+
+/* Grupo de votos */
+.fa-vote-group {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--fa-border);
+  border-radius: var(--fa-radius-pill);
+  overflow: hidden;
+  background: var(--fa-surface);
+  flex-shrink: 0;
+}
+.fa-vote-group.is-liked .fa-vote-count { color: var(--fa-accent); }
+
+.fa-vote-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--fa-ink-2);
+  transition: background .15s, color .15s;
+}
+.fa-vote-btn svg { width: 14px; height: 14px; stroke: currentColor; }
+.fa-vote-btn:active { background: var(--fa-accent-soft); color: var(--fa-accent); }
+
+.fa-vote-divider { width: 1px; height: 20px; background: var(--fa-border); flex-shrink: 0; }
+
+.fa-vote-count {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fa-ink);
+  min-width: 22px;
+  text-align: center;
+  padding: 0 3px;
+  transition: color .3s;
+}
+
+/* Botón acción (comentar) */
+.fa-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 13px;
+  border-radius: var(--fa-radius-pill);
+  border: 1.5px solid var(--fa-border);
+  background: var(--fa-surface);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fa-ink-2);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .18s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.fa-action-btn svg { width: 14px; height: 14px; }
+.fa-action-btn:active { transform: scale(.94); }
+.fa-action-btn--comment:active { background: #f0f9ff; border-color: #039be5; color: #039be5; }
+
+/* Ícono de acción circular */
+.fa-action-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fa-border);
+  background: var(--fa-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--fa-ink-3);
+  font-size: 15px;
+  transition: all .18s;
+  flex-shrink: 0;
+}
+.fa-action-icon svg { width: 15px; height: 15px; stroke: currentColor; }
+.fa-action-icon:active { background: var(--fa-accent-soft); color: var(--fa-accent); border-color: var(--fa-accent); }
+
+/* Separador flexible */
+.fa-spacer { flex: 1; min-width: 0; }
+
+/* Galería de adjuntos */
+.fa-post-card .forum-attachment-gallery {
+  border-radius: var(--fa-radius-sm);
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+/* Empty state */
+.fa-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--fa-ink-3);
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.fa-empty-state svg {
+  width: 48px; height: 48px;
+  stroke: var(--fa-border);
+  margin-bottom: 12px;
+}
+
+/* ─────────────────────────────────────
+   CARGAR MÁS
+───────────────────────────────────── */
+.fa-load-wrap {
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
+}
+.fa-load-more {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 30px;
+  border-radius: var(--fa-radius-pill);
+  border: 1.5px solid var(--fa-border);
+  background: var(--fa-card);
+  color: var(--fa-ink-2);
+  cursor: pointer;
+  transition: all .2s;
+  box-shadow: var(--fa-shadow-sm);
+}
+.fa-load-more:not(:disabled):active {
+  background: var(--fa-accent);
+  color: #fff;
+  border-color: var(--fa-accent);
+  box-shadow: 0 2px 12px rgba(61,90,254,.25);
+}
+.fa-load-more:disabled,
+.fa-load-more.is-disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ─────────────────────────────────────
+   PANEL FILTRO (bottom sheet)
+───────────────────────────────────── */
+.fa-filter-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+}
+.fa-filter-panel[hidden] { display: none; }
+
+.fa-filter-panel__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13,17,23,.45);
+  opacity: 0;
+  transition: opacity .26s;
+}
+.fa-filter-panel.is-open .fa-filter-panel__backdrop { opacity: 1; }
+
+.fa-filter-panel__sheet {
+  position: relative;
+  z-index: 1;
+  background: var(--fa-card);
+  border-radius: 24px 24px 0 0;
+  padding: 10px 16px 40px;
+  width: 100%;
+  transform: translateY(100%);
+  transition: transform .26s cubic-bezier(.32,.72,0,1);
+}
+.fa-filter-panel.is-open .fa-filter-panel__sheet { transform: translateY(0); }
+
+.fa-filter-panel__handle {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: var(--fa-border);
+  margin: 0 auto 16px;
+}
+
+.fa-filter-panel__title {
+  font-family: 'Sora', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--fa-ink);
+  margin-bottom: 14px;
+}
+
+.fa-filter-panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fa-chip {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--fa-radius-pill);
+  border: 1.5px solid var(--fa-border);
+  background: var(--fa-surface);
+  color: var(--fa-ink-2);
+  cursor: pointer;
+  transition: all .16s;
+}
+.fa-chip.active {
+  background: var(--fa-accent);
+  color: #fff;
+  border-color: var(--fa-accent);
+  box-shadow: 0 2px 10px rgba(61,90,254,.3);
+}
+
+/* ─────────────────────────────────────
+   SIDEBAR FANTASMA (para forum.js)
+───────────────────────────────────── */
+.fa-sidebar-ghost { display: none !important; }
+
+/* ─────────────────────────────────────
+   ESQUELETOS DE CARGA
+───────────────────────────────────── */
+@keyframes fa-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .45; }
+}
+.fa-skeleton {
+  background: var(--fa-card);
+  border-radius: var(--fa-radius);
+  border: 1.5px solid var(--fa-border);
+  height: 148px;
+  animation: fa-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+/* ─────────────────────────────────────
+   AJUSTES PARA EL HEADER EXISTENTE
+   (solo afectan cuando está la clase
+    .forum-redesign-page en body)
+───────────────────────────────────── */
+body.forum-redesign-page .app-header.reddit-site-header {
+  /* Se conserva tal cual. No se modifica nada. */
+}
+
+/* ─────────────────────────────────────
+   DARK MODE — ajustes adicionales
+───────────────────────────────────── */
+html.wt-forum-dark .fa-post-card { box-shadow: none; }
+html.wt-forum-dark .fa-search-field,
+html.wt-forum-dark .fa-filter-btn { background: var(--fa-card); }
+html.wt-forum-dark .fa-tab        { background: var(--fa-card); }
+html.wt-forum-dark .fa-vote-group,
+html.wt-forum-dark .fa-action-btn,
+html.wt-forum-dark .fa-action-icon,
+html.wt-forum-dark .fa-load-more  { background: var(--fa-card); }
+html.wt-forum-dark .fa-compose    { box-shadow: none; }
+
+/* ─────────────────────────────────────
+   RESPONSIVE — desde 600 px
+───────────────────────────────────── */
+@media (min-width: 600px) {
+  .fa-posts { gap: 14px; }
+  .fa-post-card { padding: 20px 22px; }
+  .fa-tabs-wrap { padding: 16px 24px 0; }
+  .fa-search-wrap { padding: 14px 24px; }
+  .fa-compose { margin: 0 24px 18px; }
+  .fa-section-label { padding: 4px 24px 10px; }
+  .fa-posts { padding: 0 24px; }
+  .fa-load-wrap { padding: 28px 24px; }
+}
+
+@media (min-width: 900px) {
+  .fa-tabs-wrap { padding-top: 20px; }
+}
+
+/* ============================================================
+   HOTFIX v3867 — Corrección real PDF/modal/oscuro foro
+   ============================================================ */
+
+/* Nueva publicación: modal compacto, sin estirarse ni crear espacio vacío. */
+body .modal-backdrop .modal-card.forum-create-modal,
+body .modal-backdrop .forum-create-modal.modal-card,
+html body .forum-create-modal.modal-card,
+html body .modal-card.forum-create-modal {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(90dvh, 760px) !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, auto) !important;
+  align-self: center !important;
+}
+
+body .modal-backdrop .forum-create-modal .modal-body,
+body .modal-backdrop .modal-card.forum-create-modal .modal-body,
+html body .forum-create-modal .modal-body {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(70dvh, 610px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  flex: unset !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body .forum-create-modal .forum-post-form,
+body .modal-card.forum-create-modal .forum-post-form {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 14px !important;
+  padding-bottom: 0 !important;
+}
+
+body .forum-create-modal .forum-create-actions,
+body .modal-card.forum-create-modal .forum-create-actions {
+  position: relative !important;
+  bottom: auto !important;
+  z-index: 2 !important;
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Modo oscuro del modal: categoría/select y campos totalmente legibles en PC y móvil. */
+html.wt-forum-dark body .forum-create-modal,
+body.wt-forum-dark .forum-create-modal,
+html.wt-dark-mode body .forum-create-modal,
+body.wt-dark-mode .forum-create-modal,
+html[data-theme="dark"] body .forum-create-modal,
+body[data-theme="dark"] .forum-create-modal,
+body.reddit-page .forum-create-modal {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+html.wt-forum-dark body .forum-create-modal .forum-field > span,
+body.wt-forum-dark .forum-create-modal .forum-field > span,
+html.wt-dark-mode body .forum-create-modal .forum-field > span,
+body.wt-dark-mode .forum-create-modal .forum-field > span,
+html[data-theme="dark"] body .forum-create-modal .forum-field > span,
+body[data-theme="dark"] .forum-create-modal .forum-field > span,
+body.reddit-page .forum-create-modal .forum-field > span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body .forum-create-modal .forum-input,
+html.wt-forum-dark body .forum-create-modal .forum-select,
+html.wt-forum-dark body .forum-create-modal select,
+html.wt-forum-dark body .forum-create-modal option,
+body.wt-forum-dark .forum-create-modal .forum-input,
+body.wt-forum-dark .forum-create-modal .forum-select,
+body.wt-forum-dark .forum-create-modal select,
+body.wt-forum-dark .forum-create-modal option,
+html.wt-dark-mode body .forum-create-modal .forum-input,
+html.wt-dark-mode body .forum-create-modal .forum-select,
+html.wt-dark-mode body .forum-create-modal select,
+html.wt-dark-mode body .forum-create-modal option,
+html[data-theme="dark"] body .forum-create-modal .forum-input,
+html[data-theme="dark"] body .forum-create-modal .forum-select,
+html[data-theme="dark"] body .forum-create-modal select,
+html[data-theme="dark"] body .forum-create-modal option,
+body.reddit-page .forum-create-modal .forum-select,
+body.reddit-page .forum-create-modal select {
+  background: #07142b !important;
+  background-color: #07142b !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  border-color: rgba(147,197,253,.34) !important;
+  opacity: 1 !important;
+}
+
+/* PDF seleccionado: nunca blanco en el modal oscuro, y el nombre siempre visible. */
+body .forum-create-modal .forum-selected-pdfs {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 10px !important;
+  min-height: 0 !important;
+}
+body .forum-create-modal .forum-selected-pdfs[hidden] {
+  display: none !important;
+}
+body .forum-create-modal .forum-selected-pdf,
+html.wt-forum-dark body .forum-create-modal .forum-selected-pdf,
+body.wt-forum-dark .forum-create-modal .forum-selected-pdf,
+html.wt-dark-mode body .forum-create-modal .forum-selected-pdf,
+html[data-theme="dark"] body .forum-create-modal .forum-selected-pdf,
+body.reddit-page .forum-create-modal .forum-selected-pdf {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 68px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  background: #0f1b31 !important;
+  background-color: #0f1b31 !important;
+  border: 1px solid rgba(148,163,184,.34) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 26px rgba(0,0,0,.22) !important;
+}
+
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-forum-dark body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html.wt-dark-mode body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html[data-theme="dark"] body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+body.reddit-page .forum-create-modal .forum-selected-pdf .forum-pdf-meta {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong {
+  font-weight: 950 !important;
+  max-width: 100% !important;
+}
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta small {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+body .forum-create-modal .forum-selected-pdf button {
+  background: rgba(255,255,255,.14) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Estado vacío del foro oscuro: bloquear definitivamente el blanco. */
+html.wt-forum-dark body.reddit-page .empty-state,
+body.wt-forum-dark.reddit-page .empty-state,
+html.wt-dark-mode body.reddit-page .empty-state,
+body.wt-dark-mode.reddit-page .empty-state,
+html[data-theme="dark"] body.reddit-page .empty-state,
+body[data-theme="dark"].reddit-page .empty-state,
+body.reddit-page .empty-state.forum-empty-state,
+body.reddit-page [data-empty-state="forum-posts"] {
+  background: #111820 !important;
+  background-color: #111820 !important;
+  background-image: linear-gradient(145deg, #111820, #08101d) !important;
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  border-color: rgba(148,163,184,.30) !important;
+}
+
+/* Perfil PC foro oscuro: cápsula oscura y nombre visible. */
+@media (min-width: 768px) {
+  html.wt-forum-dark body.reddit-page .auth-area .user-chip,
+  body.wt-forum-dark.reddit-page .auth-area .user-chip,
+  html.wt-dark-mode body.reddit-page .auth-area .user-chip,
+  body.wt-dark-mode.reddit-page .auth-area .user-chip,
+  html[data-theme="dark"] body.reddit-page .auth-area .user-chip,
+  body[data-theme="dark"].reddit-page .auth-area .user-chip,
+  body.reddit-page .auth-area .user-chip {
+    background: #111827 !important;
+    background-color: #111827 !important;
+    border-color: rgba(148,163,184,.34) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    width: auto !important;
+    min-width: 150px !important;
+    max-width: 240px !important;
+    height: 56px !important;
+    padding: 6px 14px 6px 8px !important;
+  }
+
+  html.wt-forum-dark body.reddit-page .auth-area .user-chip span,
+  body.wt-forum-dark.reddit-page .auth-area .user-chip span,
+  html.wt-dark-mode body.reddit-page .auth-area .user-chip span,
+  html[data-theme="dark"] body.reddit-page .auth-area .user-chip span,
+  body.reddit-page .auth-area .user-chip span {
+    display: inline-block !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    opacity: 1 !important;
+    max-width: 165px !important;
+  }
+}
+
+/* v3879: estado de PDF sin información relevante */
+.forum-pdf-summary-trigger.is-not-relevant {
+  opacity: .92;
+  border-style: dashed;
+}
+.forum-pdf-not-relevant-card {
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 16px;
+  padding: 16px;
+  background: rgba(148, 163, 184, .08);
+}
+.forum-pdf-not-relevant-card strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.forum-pdf-not-relevant-card p {
+  margin: 0 0 8px;
+  color: var(--muted, #64748b);
+}
+.forum-pdf-not-relevant-card small {
+  color: var(--muted, #64748b);
+}
+[data-theme="dark"] .forum-pdf-not-relevant-card,
+.dark .forum-pdf-not-relevant-card {
+  background: rgba(30, 41, 59, .72);
+  border-color: rgba(148, 163, 184, .22);
+}

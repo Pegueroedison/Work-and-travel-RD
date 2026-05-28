@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Panel Admin | Work and Travel RD</title>
+  <link rel="icon" href="images/favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+  <meta name="theme-color" content="#062b63" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="W&T RD" />
+  <link rel="stylesheet" href="css/style.css?v=4035" />
+  <link rel="stylesheet" href="css/admin.css?v=4035" />
+  <link rel="stylesheet" href="css/ui-polish.css?v=4035" />
+  <link rel="stylesheet" href="css/app-overrides.css?v=4035" />
+  <link rel="stylesheet" href="css/desktop.css?v=4035" />
+
+  <style id="adminBootCSS">
+    body.admin-booting #adminSidebar,
+    body.admin-booting #adminPanel,
+    body.admin-booting #adminMobileSwitcher,
+    body.admin-booting #adminMobileOverlay {
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+    body.admin-booting #adminGuard {
+      visibility: visible !important;
+      opacity: 1 !important;
+      min-height: 48vh;
+      display: grid;
+      place-items: center;
+    }
+    body.admin-booting #adminGuard::after {
+      content: "Cargando panel admin...";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+      color: #0f1b33;
+      font-weight: 900;
+      box-shadow: 0 16px 42px rgba(15,23,42,.10);
+    }
+  </style>
+
+<link rel="stylesheet" href="css/profile-modal-fixes.css?v=4035">
+</head>
+<body data-page="admin" class="admin-booting">
+  <header class="app-header admin-topbar">
+    <a class="brand" href="index.html"><img id="siteLogo" src="images/placeholder-logo.png" alt="Logo" onerror="this.onerror=null;this.src=\'images/placeholder-logo.png\';" /><span id="siteName">Work and Travel RD</span></a>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">☰</button>
+    <nav class="main-nav" id="mainNav"><a href="index.html">Sitio</a><a href="foro.html">Foro</a><a href="practica-consular.html">Práctica</a></nav>
+    <div class="auth-area" id="authArea"></div>
+  </header>
+  <main class="admin-shell">
+    <aside class="admin-sidebar admin-sidebar-organized" id="adminSidebar">
+      <div class="admin-nav-group" data-admin-group="principal">
+        <span class="admin-nav-group-title">Principal</span>
+        <button data-section="dashboard" class="active">Dashboard</button>
+        <button data-section="forum">Foro</button>
+        <button data-section="users">Usuarios</button>
+      </div>
+      <div class="admin-nav-group" data-admin-group="contenido">
+        <span class="admin-nav-group-title">Contenido</span>
+        <button data-section="home">Inicio</button>
+        <button data-section="announcements">Anuncios</button>
+        <button data-section="services">Servicios</button>
+        <button data-section="courses">Cursos</button>
+      </div>
+      <div class="admin-nav-group" data-admin-group="herramientas">
+        <span class="admin-nav-group-title">Herramientas</span>
+        <button data-section="practice-hub">Práctica consular</button>
+        <button data-section="storage">Almacenamiento</button>
+      </div>
+      <div class="admin-nav-group" data-admin-group="sistema">
+        <span class="admin-nav-group-title">Sistema</span>
+        <button data-section="appearance">Apariencia</button>
+        <button data-section="settings">Configuración</button>
+        <button data-section="logs">Logs</button>
+      </div>
+    </aside>
+    <section class="admin-content">
+      <div id="adminGuard" class="admin-guard card">Verificando permisos...</div>
+      <div id="adminPanel" class="hidden">
+        <div class="admin-head">
+          <div><span class="eyebrow">Panel Admin</span><h1 id="adminTitle">Dashboard</h1></div>
+          <button class="btn btn-primary" id="adminCreateBtn">Crear</button>
+        </div>
+        <div id="adminView"></div>
+      </div>
+    </section>
+  </main>
+  <footer class="app-footer" id="appFooter">
+    <div class="container footer-grid">
+      <div>
+        <strong>Work and Travel RD</strong>
+        <p id="footerText">Comunidad y herramientas para estudiantes dominicanos del programa Summer Work and Travel.</p>
+      </div>
+      <div class="footer-links">
+        <a href="servicios.html">Servicios</a>
+        <a href="cursos.html">Cursos</a>
+        <a href="foro.html">Foro</a>
+        <a href="practica-consular.html">Práctica</a>
+        <a href="legal.html#terminos">Términos y condiciones</a>
+        <a href="legal.html#privacidad">Política de privacidad</a>
+        <a href="legal.html#aviso-legal">Aviso legal</a>
+      </div>
+    </div>
+  </footer>
+  <div id="modalRoot"></div><div id="toastRoot" class="toast-root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js?v=4035"></script><script src="js/supabase-client.js?v=4035"></script><script src="js/theme.js?v=4035"></script><script src="js/auth.js?v=4035"></script><script src="js/content.js?v=4035"></script><script src="js/image-compressor.js?v=4035"></script>
+  <script src="js/image-editor.js?v=4035"></script><script src="js/site-dynamic.js?v=4035"></script><script src="js/admin-rich-editor.js?v=4035"></script><script src="js/admin-content.js?v=4035"></script><script src="js/admin-dynamic.js?v=4035"></script><script src="js/admin-forum.js?v=4035"></script><script src="js/admin-practice.js?v=4035"></script><script src="js/admin-practice-advanced.js?v=4035"></script><script src="js/admin.js?v=4035"></script>
+  <script src="js/pwa.js?v=4035"></script>
+</body>
+</html>

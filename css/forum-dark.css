@@ -1,0 +1,2507 @@
+/* ================================================================
+   forum-dark.css — Modo oscuro AISLADO del foro
+   Solo cargado en foro.html y post.html.
+   No afecta ninguna otra página de la web.
+   ================================================================ */
+
+/* ── Variables del modo oscuro del foro ── */
+html.wt-forum-dark {
+  --forum-bg:        #0b0f14;
+  --forum-surface:   #111822;
+  --forum-surface-2: #17233a;
+  --forum-text:      #e8f1ff;
+  --forum-muted:     #8ba1c4;
+  --forum-border:    rgba(148, 163, 184, .14);
+  --forum-button:    #1a2540;
+  --forum-accent:    #4d9fff;
+  --forum-cta:       #1f7bff;
+}
+
+/* ── Base de página ── */
+html.wt-forum-dark,
+html.wt-forum-dark body {
+  background: var(--forum-bg);
+  color: var(--forum-text);
+}
+
+/* ── App header en foro oscuro ── */
+html.wt-forum-dark .app-header {
+  background: rgba(11, 15, 20, .97);
+  border-bottom-color: var(--forum-border);
+}
+
+/* ── Contenedor principal del foro ── */
+html.wt-forum-dark .forum-app,
+html.wt-forum-dark body[data-page="forum"] main,
+html.wt-forum-dark body[data-page="post"] main {
+  background: var(--forum-bg);
+}
+
+/* ── Tarjetas de post ── */
+html.wt-forum-dark .fa-post-card,
+html.wt-forum-dark .reddit-post-card {
+  background: var(--forum-surface);
+  border-color: var(--forum-border);
+  color: var(--forum-text);
+}
+
+html.wt-forum-dark .fa-post-card:hover,
+html.wt-forum-dark .reddit-post-card:hover {
+  background: var(--forum-surface-2);
+}
+
+/* ── Texto muted ── */
+html.wt-forum-dark .reddit-post-meta,
+html.wt-forum-dark .reddit-category-text,
+html.wt-forum-dark .forum-muted,
+html.wt-forum-dark time {
+  color: var(--forum-muted);
+}
+
+/* ── Labels / secciones ── */
+html.wt-forum-dark .fa-section-label {
+  color: var(--forum-muted);
+  border-bottom-color: var(--forum-border);
+}
+
+/* ── Barra de búsqueda / filtros ── */
+html.wt-forum-dark .fa-search-wrap .input,
+html.wt-forum-dark .fa-filter-panel .input,
+html.wt-forum-dark .forum-search-input {
+  background: var(--forum-surface-2);
+  border-color: var(--forum-border);
+  color: var(--forum-text);
+}
+html.wt-forum-dark .fa-search-wrap .input::placeholder { color: var(--forum-muted); }
+
+/* ── Panel de filtros (sheet) ── */
+html.wt-forum-dark .fa-filter-panel__sheet {
+  background: #141e2f;
+  border-color: var(--forum-border);
+}
+
+/* ── Botones ── */
+html.wt-forum-dark .forum-btn,
+html.wt-forum-dark .fa-btn {
+  background: var(--forum-button);
+  color: var(--forum-text);
+  border-color: var(--forum-border);
+}
+
+/* ── Botón de nueva publicación ── */
+html.wt-forum-dark .forum-new-post-btn,
+html.wt-forum-dark .fa-new-post-btn {
+  background: var(--forum-cta);
+  color: #fff;
+}
+
+/* ── Post detail / comentarios ── */
+html.wt-forum-dark .reddit-post-body,
+html.wt-forum-dark .comment-body,
+html.wt-forum-dark .comment-card {
+  background: var(--forum-surface);
+  border-color: var(--forum-border);
+  color: var(--forum-text);
+}
+
+html.wt-forum-dark .comment-card .comment-head {
+  border-bottom-color: var(--forum-border);
+}
+
+html.wt-forum-dark .comment-reply-context {
+  background: var(--forum-surface-2);
+  color: #c4d8f4;
+  border-color: var(--forum-border);
+}
+
+/* ── Textarea de nuevo comentario ── */
+html.wt-forum-dark .forum-reply-box .input,
+html.wt-forum-dark .forum-comment-form .input {
+  background: var(--forum-surface-2);
+  border-color: var(--forum-border);
+  color: var(--forum-text);
+}
+html.wt-forum-dark .forum-reply-box .input::placeholder { color: var(--forum-muted); }
+
+/* ── Badges y pills ── */
+html.wt-forum-dark .badge,
+html.wt-forum-dark .role-badge {
+  background: var(--forum-surface-2);
+  border-color: var(--forum-border);
+}
+
+/* ── Modales abiertos desde el foro ── */
+html.wt-forum-dark .modal-card {
+  background: #141e2f;
+  border-color: var(--forum-border);
+  color: var(--forum-text);
+}
+html.wt-forum-dark .modal-head {
+  border-bottom-color: var(--forum-border);
+}
+html.wt-forum-dark .modal-head h2 { color: #e8f1ff; }
+html.wt-forum-dark .modal-close {
+  background: #1a2540;
+  color: #c4d8f4;
+}
+
+/* ── Perfil público ── */
+html.wt-forum-dark .modal-card.public-profile-modal {
+  background: #0d1a2e;
+  border-color: rgba(148,163,184,.22);
+}
+html.wt-forum-dark .public-profile-bio {
+  background: var(--forum-surface-2);
+  color: #e8f1ff;
+  border-color: var(--forum-border);
+}
+html.wt-forum-dark .public-profile-chip {
+  background: #1a2c48;
+  color: #c4d8f4;
+  border-color: var(--forum-border);
+}
+
+/* ── Tabs ── */
+html.wt-forum-dark .fa-tabs-wrap {
+  background: rgba(11,15,20,.9);
+  border-bottom-color: var(--forum-border);
+}
+html.wt-forum-dark .fa-tab {
+  color: var(--forum-muted);
+}
+html.wt-forum-dark .fa-tab.active {
+  color: var(--forum-accent);
+  border-bottom-color: var(--forum-accent);
+}
+
+/* ── Galería de adjuntos ── */
+html.wt-forum-dark .forum-attachment {
+  background: var(--forum-surface-2);
+  border-color: var(--forum-border);
+}
+
+/* ── Quick nav oscuro ── */
+html.wt-forum-dark .mobile-quick-nav {
+  background: rgba(11,15,20,.96);
+  border-top-color: var(--forum-border);
+}
+html.wt-forum-dark .mobile-quick-nav a {
+  color: var(--forum-muted);
+}
+html.wt-forum-dark .mobile-quick-nav a.active {
+  color: var(--forum-accent);
+}
+
+/* ── Toast ── */
+html.wt-forum-dark .toast {
+  background: #17233a;
+  border: 1px solid var(--forum-border);
+}
+
+/* ── Scrollbar (Chrome/Edge) ── */
+html.wt-forum-dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+html.wt-forum-dark ::-webkit-scrollbar-track { background: var(--forum-bg); }
+html.wt-forum-dark ::-webkit-scrollbar-thumb { background: #2a3a55; border-radius: 3px; }
+
+/* ── Evitar sangrado de fondo oscuro en páginas NO-foro ── */
+/* Este archivo solo se carga en foro.html y post.html,
+   así que estas reglas no pueden contaminar otras páginas. */
+
+
+/* ============================================================
+   HOTFIX v3860 — Foro oscuro sin cajas blancas + perfil PC legible
+   ============================================================ */
+
+/* El estado vacío del foro oscuro no debe verse blanco. */
+html.wt-forum-dark body.reddit-page .empty-state,
+html.wt-forum-dark body.reddit-page .empty-state.compact,
+html.wt-forum-dark body.reddit-page .fa-empty-state,
+html.wt-forum-dark body.reddit-page #forumPosts .empty-state,
+html.wt-forum-dark body.reddit-page #forumList .empty-state,
+html.wt-forum-dark body.reddit-page #forumListEmpty,
+html.wt-forum-dark body.reddit-page [data-empty-state],
+html.wt-forum-dark body.reddit-page .forum-empty-state,
+html.wt-forum-dark body.reddit-page .reddit-empty-state {
+  background: linear-gradient(145deg, rgba(18, 25, 36, .96), rgba(10, 15, 24, .96)) !important;
+  background-color: #111820 !important;
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, .24) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 12px 28px rgba(0,0,0,.18) !important;
+}
+
+html.wt-forum-dark body.reddit-page .empty-state *,
+html.wt-forum-dark body.reddit-page .fa-empty-state *,
+html.wt-forum-dark body.reddit-page #forumPosts .empty-state *,
+html.wt-forum-dark body.reddit-page #forumList .empty-state * {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+/* En PC/modo oscuro, el chip de perfil no debe quedar blanco con texto invisible. */
+html.wt-forum-dark body.reddit-page .user-chip,
+html.wt-dark-mode body.reddit-page .user-chip,
+html[data-theme="dark"] body.reddit-page .user-chip {
+  background: rgba(18, 25, 36, .96) !important;
+  border: 1px solid rgba(148, 163, 184, .28) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.28) !important;
+}
+
+html.wt-forum-dark body.reddit-page .user-chip span,
+html.wt-dark-mode body.reddit-page .user-chip span,
+html[data-theme="dark"] body.reddit-page .user-chip span {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+html.wt-forum-dark body.reddit-page .notifications-btn,
+html.wt-dark-mode body.reddit-page .notifications-btn,
+html[data-theme="dark"] body.reddit-page .notifications-btn {
+  background: rgba(18, 25, 36, .96) !important;
+  border: 1px solid rgba(148, 163, 184, .28) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+/* Placeholder futuro para adjuntos PDF: solo icono/tarjeta, no carga el archivo hasta abrir. */
+.forum-pdf-attachment {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 54px !important;
+  padding: 10px 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(148, 163, 184, .28) !important;
+  background: rgba(248, 250, 252, .92) !important;
+  color: #0f172a !important;
+  text-decoration: none !important;
+  font-weight: 850 !important;
+}
+
+html.wt-forum-dark body.reddit-page .forum-pdf-attachment {
+  background: rgba(18, 25, 36, .96) !important;
+  border-color: rgba(148, 163, 184, .24) !important;
+  color: #f8fafc !important;
+}
+
+.forum-pdf-attachment::before {
+  content: "PDF";
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 950;
+  letter-spacing: .04em;
+}
+
+
+/* ============================================================
+   HOTFIX v3861 — PDF del foro con Google Drive/App Script
+   ============================================================ */
+
+.forum-pdf-field { margin-top: 8px !important; }
+
+.forum-pdf-dropzone {
+  border-style: dashed !important;
+}
+
+.forum-pdf-upload-icon {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  color: #fff !important;
+  font-size: .88rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .04em !important;
+  box-shadow: 0 14px 26px rgba(220, 38, 38, .25) !important;
+}
+
+.forum-selected-pdfs {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+}
+
+.forum-selected-pdfs[hidden] { display: none !important; }
+
+.forum-selected-pdf {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(148, 163, 184, .28) !important;
+  background: rgba(248, 250, 252, .92) !important;
+}
+
+.forum-pdf-badge {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  color: #fff !important;
+  font-size: .72rem !important;
+  font-weight: 950 !important;
+}
+
+.forum-pdf-meta {
+  display: grid !important;
+  min-width: 0 !important;
+}
+
+.forum-pdf-meta strong {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.forum-pdf-meta small {
+  color: #64748b !important;
+  font-weight: 750 !important;
+}
+
+.forum-selected-pdf button {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(15, 23, 42, .08) !important;
+  color: #0f172a !important;
+  font-size: 1.3rem !important;
+  line-height: 1 !important;
+}
+
+.forum-pdf-list {
+  display: grid !important;
+  gap: 10px !important;
+  margin: 12px 0 !important;
+}
+
+.forum-pdf-attachment {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 62px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(148, 163, 184, .28) !important;
+  background: rgba(248, 250, 252, .94) !important;
+  color: #0f172a !important;
+  text-decoration: none !important;
+}
+
+.forum-pdf-attachment::before {
+  content: "PDF" !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  color: #fff !important;
+  font-size: .72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .04em !important;
+}
+
+.forum-pdf-open {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  background: #072553 !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+}
+
+html.wt-forum-dark body.reddit-page .forum-selected-pdf,
+html.wt-forum-dark body.reddit-page .forum-pdf-attachment {
+  background: rgba(18, 25, 36, .96) !important;
+  border-color: rgba(148, 163, 184, .24) !important;
+  color: #f8fafc !important;
+}
+
+html.wt-forum-dark body.reddit-page .forum-pdf-meta strong,
+html.wt-forum-dark body.reddit-page .forum-pdf-meta small {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+html.wt-forum-dark body.reddit-page .empty-state,
+html.wt-forum-dark body.reddit-page #forumPosts .empty-state,
+html.wt-forum-dark body.reddit-page #forumList .empty-state {
+  background: linear-gradient(145deg, rgba(18, 25, 36, .96), rgba(10, 15, 24, .96)) !important;
+  background-color: #111820 !important;
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  border-color: rgba(148, 163, 184, .24) !important;
+}
+
+
+/* ============================================================
+   HOTFIX v3862 — Foro oscuro real + perfil PC legible
+   ============================================================ */
+
+/* Cubrir cualquier variante donde el modo oscuro esté en html o body. */
+html.wt-forum-dark body.reddit-page .empty-state,
+body.wt-forum-dark.reddit-page .empty-state,
+html.wt-dark-mode body.reddit-page .empty-state,
+body.wt-dark-mode.reddit-page .empty-state,
+html[data-theme="dark"] body.reddit-page .empty-state,
+body[data-theme="dark"].reddit-page .empty-state,
+html.wt-forum-dark body[data-page="forum"] .empty-state,
+body.wt-forum-dark[data-page="forum"] .empty-state,
+html.wt-dark-mode body[data-page="forum"] .empty-state,
+body.wt-dark-mode[data-page="forum"] .empty-state,
+html[data-theme="dark"] body[data-page="forum"] .empty-state,
+body[data-theme="dark"][data-page="forum"] .empty-state,
+html.wt-forum-dark body.reddit-page #forumPosts .empty-state,
+body.wt-forum-dark.reddit-page #forumPosts .empty-state,
+html.wt-forum-dark body.reddit-page #forumList .empty-state,
+body.wt-forum-dark.reddit-page #forumList .empty-state,
+html.wt-forum-dark body.reddit-page .fa-empty-state,
+body.wt-forum-dark.reddit-page .fa-empty-state {
+  background: #111820 !important;
+  background-color: #111820 !important;
+  background-image: linear-gradient(145deg, rgba(18,25,36,.98), rgba(8,13,22,.98)) !important;
+  border: 1px dashed rgba(148,163,184,.30) !important;
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 28px rgba(0,0,0,.18) !important;
+}
+
+html.wt-forum-dark body.reddit-page .empty-state *,
+body.wt-forum-dark.reddit-page .empty-state *,
+html.wt-dark-mode body.reddit-page .empty-state *,
+body.wt-dark-mode.reddit-page .empty-state *,
+html[data-theme="dark"] body.reddit-page .empty-state *,
+body[data-theme="dark"].reddit-page .empty-state * {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+/* Perfil PC: nombre al lado de la foto visible en modo oscuro. */
+html.wt-forum-dark body.reddit-page .auth-area .user-chip,
+body.wt-forum-dark.reddit-page .auth-area .user-chip,
+html.wt-dark-mode body.reddit-page .auth-area .user-chip,
+body.wt-dark-mode.reddit-page .auth-area .user-chip,
+html[data-theme="dark"] body.reddit-page .auth-area .user-chip,
+body[data-theme="dark"].reddit-page .auth-area .user-chip {
+  background: rgba(18, 25, 36, .96) !important;
+  border-color: rgba(148, 163, 184, .34) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.26) !important;
+}
+
+html.wt-forum-dark body.reddit-page .auth-area .user-chip span,
+body.wt-forum-dark.reddit-page .auth-area .user-chip span,
+html.wt-dark-mode body.reddit-page .auth-area .user-chip span,
+body.wt-dark-mode.reddit-page .auth-area .user-chip span,
+html[data-theme="dark"] body.reddit-page .auth-area .user-chip span,
+body[data-theme="dark"].reddit-page .auth-area .user-chip span {
+  display: inline !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html.wt-forum-dark body.reddit-page .auth-area .notifications-btn,
+body.wt-forum-dark.reddit-page .auth-area .notifications-btn,
+html.wt-dark-mode body.reddit-page .auth-area .notifications-btn,
+body.wt-dark-mode.reddit-page .auth-area .notifications-btn {
+  background: rgba(18, 25, 36, .96) !important;
+  border-color: rgba(148, 163, 184, .34) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+/* PDF debe aparecer claramente en el modal Nueva publicación. */
+.forum-create-modal .forum-pdf-field,
+.modal-card.forum-create-modal .forum-pdf-field {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin-top: 14px !important;
+}
+
+.forum-create-modal .forum-pdf-dropzone,
+.modal-card.forum-create-modal .forum-pdf-dropzone {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 132px !important;
+  padding: 18px !important;
+  border: 1.8px dashed rgba(220, 38, 38, .35) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(248,250,252,.78)) !important;
+}
+
+html.wt-forum-dark .forum-create-modal .forum-pdf-dropzone,
+body.wt-forum-dark .forum-create-modal .forum-pdf-dropzone,
+html.wt-dark-mode .forum-create-modal .forum-pdf-dropzone,
+body.wt-dark-mode .forum-create-modal .forum-pdf-dropzone {
+  background: rgba(9, 20, 44, .92) !important;
+  border-color: rgba(248,113,113,.42) !important;
+  color: #f8fafc !important;
+}
+
+.forum-pdf-upload-icon {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  color: #fff !important;
+  font-size: .88rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .04em !important;
+  box-shadow: 0 14px 26px rgba(220, 38, 38, .25) !important;
+}
+
+.forum-selected-pdfs {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 12px !important;
+}
+.forum-selected-pdfs[hidden] { display: none !important; }
+
+.forum-selected-pdf {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(148, 163, 184, .28) !important;
+  background: rgba(248, 250, 252, .92) !important;
+}
+
+.forum-pdf-badge,
+.forum-pdf-attachment::before {
+  content: "PDF" !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  color: #fff !important;
+  font-size: .72rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .04em !important;
+}
+
+.forum-pdf-list {
+  display: grid !important;
+  gap: 10px !important;
+  margin: 12px 0 !important;
+}
+
+.forum-pdf-attachment {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-height: 62px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(148,163,184,.28) !important;
+  background: rgba(248,250,252,.94) !important;
+  color: #0f172a !important;
+  text-decoration: none !important;
+}
+
+.forum-pdf-meta {
+  display: grid !important;
+  min-width: 0 !important;
+}
+.forum-pdf-meta strong {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.forum-pdf-meta small {
+  color: #64748b !important;
+  font-weight: 750 !important;
+}
+
+.forum-pdf-open {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  background: #072553 !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+}
+
+html.wt-forum-dark body.reddit-page .forum-selected-pdf,
+body.wt-forum-dark.reddit-page .forum-selected-pdf,
+html.wt-forum-dark body.reddit-page .forum-pdf-attachment,
+body.wt-forum-dark.reddit-page .forum-pdf-attachment {
+  background: rgba(18, 25, 36, .96) !important;
+  border-color: rgba(148, 163, 184, .24) !important;
+  color: #f8fafc !important;
+}
+
+html.wt-forum-dark body.reddit-page .forum-pdf-meta strong,
+body.wt-forum-dark.reddit-page .forum-pdf-meta strong,
+html.wt-forum-dark body.reddit-page .forum-pdf-meta small,
+body.wt-forum-dark.reddit-page .forum-pdf-meta small {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+
+/* ============================================================
+   HOTFIX v3866 — PDF sesión + modal compacto + modo oscuro
+   ============================================================ */
+
+/* Perfil PC en foro oscuro: evita cápsula blanca con nombre invisible. */
+@media (min-width: 768px) {
+  html.wt-forum-dark body.reddit-page .auth-area .user-chip,
+  body.wt-forum-dark.reddit-page .auth-area .user-chip,
+  html.wt-dark-mode body.reddit-page .auth-area .user-chip,
+  body.wt-dark-mode.reddit-page .auth-area .user-chip,
+  html[data-theme="dark"] body.reddit-page .auth-area .user-chip,
+  body[data-theme="dark"].reddit-page .auth-area .user-chip,
+  body.reddit-page.dark .auth-area .user-chip {
+    background: rgba(17, 24, 39, .98) !important;
+    background-color: rgba(17, 24, 39, .98) !important;
+    border: 1px solid rgba(148, 163, 184, .32) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    min-width: 150px !important;
+    max-width: 240px !important;
+    width: auto !important;
+    height: 56px !important;
+    padding: 6px 14px 6px 8px !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+  }
+
+  html.wt-forum-dark body.reddit-page .auth-area .user-chip span,
+  body.wt-forum-dark.reddit-page .auth-area .user-chip span,
+  html.wt-dark-mode body.reddit-page .auth-area .user-chip span,
+  body.wt-dark-mode.reddit-page .auth-area .user-chip span,
+  html[data-theme="dark"] body.reddit-page .auth-area .user-chip span,
+  body[data-theme="dark"].reddit-page .auth-area .user-chip span,
+  body.reddit-page.dark .auth-area .user-chip span {
+    display: inline-block !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    opacity: 1 !important;
+    max-width: 165px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+}
+
+/* Modal Nueva publicación no debe estirarse con un espacio vacío enorme al agregar PDF. */
+.forum-create-modal.modal-card,
+.modal-card.forum-create-modal {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(92dvh, 760px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.forum-create-modal .modal-body,
+.modal-card.forum-create-modal .modal-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: calc(min(92dvh, 760px) - 112px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.forum-create-modal .forum-post-form,
+.modal-card.forum-create-modal .forum-post-form {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 12px !important;
+}
+
+.forum-create-modal .forum-create-actions,
+.modal-card.forum-create-modal .forum-create-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 4 !important;
+  margin-top: 14px !important;
+  padding-top: 10px !important;
+}
+
+/* PDF seleccionado en modo oscuro: nombre visible y sin tarjeta blanca. */
+html.wt-forum-dark .forum-create-modal .forum-selected-pdf,
+body.wt-forum-dark .forum-create-modal .forum-selected-pdf,
+html.wt-dark-mode .forum-create-modal .forum-selected-pdf,
+body.wt-dark-mode .forum-create-modal .forum-selected-pdf,
+html[data-theme="dark"] .forum-create-modal .forum-selected-pdf,
+body[data-theme="dark"] .forum-create-modal .forum-selected-pdf {
+  background: rgba(15, 23, 42, .98) !important;
+  background-color: rgba(15, 23, 42, .98) !important;
+  border: 1px solid rgba(148, 163, 184, .32) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 12px 26px rgba(0,0,0,.22) !important;
+}
+
+html.wt-forum-dark .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+html.wt-forum-dark .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+body.wt-forum-dark .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+body.wt-forum-dark .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-dark-mode .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+html.wt-dark-mode .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html[data-theme="dark"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+html[data-theme="dark"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark .forum-create-modal .forum-selected-pdf button,
+body.wt-forum-dark .forum-create-modal .forum-selected-pdf button,
+html.wt-dark-mode .forum-create-modal .forum-selected-pdf button,
+html[data-theme="dark"] .forum-create-modal .forum-selected-pdf button {
+  background: rgba(255,255,255,.12) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* El aviso de error debe quedar arriba sin tapar el modal completo. */
+.forum-create-modal .toast,
+.modal-card.forum-create-modal .toast {
+  z-index: 999999 !important;
+}
+
+/* Botón PDF con color estable */
+.forum-create-modal .forum-pdf-badge,
+.forum-create-modal .forum-pdf-upload-icon {
+  background: linear-gradient(135deg, #dc2626, #991b1b) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* ============================================================
+   HOTFIX v3867 — Corrección real PDF/modal/oscuro foro
+   ============================================================ */
+
+/* Nueva publicación: modal compacto, sin estirarse ni crear espacio vacío. */
+body .modal-backdrop .modal-card.forum-create-modal,
+body .modal-backdrop .forum-create-modal.modal-card,
+html body .forum-create-modal.modal-card,
+html body .modal-card.forum-create-modal {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(90dvh, 760px) !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, auto) !important;
+  align-self: center !important;
+}
+
+body .modal-backdrop .forum-create-modal .modal-body,
+body .modal-backdrop .modal-card.forum-create-modal .modal-body,
+html body .forum-create-modal .modal-body {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(70dvh, 610px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  flex: unset !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body .forum-create-modal .forum-post-form,
+body .modal-card.forum-create-modal .forum-post-form {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 14px !important;
+  padding-bottom: 0 !important;
+}
+
+body .forum-create-modal .forum-create-actions,
+body .modal-card.forum-create-modal .forum-create-actions {
+  position: relative !important;
+  bottom: auto !important;
+  z-index: 2 !important;
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Modo oscuro del modal: categoría/select y campos totalmente legibles en PC y móvil. */
+html.wt-forum-dark body .forum-create-modal,
+body.wt-forum-dark .forum-create-modal,
+html.wt-dark-mode body .forum-create-modal,
+body.wt-dark-mode .forum-create-modal,
+html[data-theme="dark"] body .forum-create-modal,
+body[data-theme="dark"] .forum-create-modal,
+body.reddit-page .forum-create-modal {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+html.wt-forum-dark body .forum-create-modal .forum-field > span,
+body.wt-forum-dark .forum-create-modal .forum-field > span,
+html.wt-dark-mode body .forum-create-modal .forum-field > span,
+body.wt-dark-mode .forum-create-modal .forum-field > span,
+html[data-theme="dark"] body .forum-create-modal .forum-field > span,
+body[data-theme="dark"] .forum-create-modal .forum-field > span,
+body.reddit-page .forum-create-modal .forum-field > span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body .forum-create-modal .forum-input,
+html.wt-forum-dark body .forum-create-modal .forum-select,
+html.wt-forum-dark body .forum-create-modal select,
+html.wt-forum-dark body .forum-create-modal option,
+body.wt-forum-dark .forum-create-modal .forum-input,
+body.wt-forum-dark .forum-create-modal .forum-select,
+body.wt-forum-dark .forum-create-modal select,
+body.wt-forum-dark .forum-create-modal option,
+html.wt-dark-mode body .forum-create-modal .forum-input,
+html.wt-dark-mode body .forum-create-modal .forum-select,
+html.wt-dark-mode body .forum-create-modal select,
+html.wt-dark-mode body .forum-create-modal option,
+html[data-theme="dark"] body .forum-create-modal .forum-input,
+html[data-theme="dark"] body .forum-create-modal .forum-select,
+html[data-theme="dark"] body .forum-create-modal select,
+html[data-theme="dark"] body .forum-create-modal option,
+body.reddit-page .forum-create-modal .forum-select,
+body.reddit-page .forum-create-modal select {
+  background: #07142b !important;
+  background-color: #07142b !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  border-color: rgba(147,197,253,.34) !important;
+  opacity: 1 !important;
+}
+
+/* PDF seleccionado: nunca blanco en el modal oscuro, y el nombre siempre visible. */
+body .forum-create-modal .forum-selected-pdfs {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 10px !important;
+  min-height: 0 !important;
+}
+body .forum-create-modal .forum-selected-pdfs[hidden] {
+  display: none !important;
+}
+body .forum-create-modal .forum-selected-pdf,
+html.wt-forum-dark body .forum-create-modal .forum-selected-pdf,
+body.wt-forum-dark .forum-create-modal .forum-selected-pdf,
+html.wt-dark-mode body .forum-create-modal .forum-selected-pdf,
+html[data-theme="dark"] body .forum-create-modal .forum-selected-pdf,
+body.reddit-page .forum-create-modal .forum-selected-pdf {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 68px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  background: #0f1b31 !important;
+  background-color: #0f1b31 !important;
+  border: 1px solid rgba(148,163,184,.34) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 26px rgba(0,0,0,.22) !important;
+}
+
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-forum-dark body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html.wt-dark-mode body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html[data-theme="dark"] body .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+body.reddit-page .forum-create-modal .forum-selected-pdf .forum-pdf-meta {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong {
+  font-weight: 950 !important;
+  max-width: 100% !important;
+}
+body .forum-create-modal .forum-selected-pdf .forum-pdf-meta small {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+body .forum-create-modal .forum-selected-pdf button {
+  background: rgba(255,255,255,.14) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Estado vacío del foro oscuro: bloquear definitivamente el blanco. */
+html.wt-forum-dark body.reddit-page .empty-state,
+body.wt-forum-dark.reddit-page .empty-state,
+html.wt-dark-mode body.reddit-page .empty-state,
+body.wt-dark-mode.reddit-page .empty-state,
+html[data-theme="dark"] body.reddit-page .empty-state,
+body[data-theme="dark"].reddit-page .empty-state,
+body.reddit-page .empty-state.forum-empty-state,
+body.reddit-page [data-empty-state="forum-posts"] {
+  background: #111820 !important;
+  background-color: #111820 !important;
+  background-image: linear-gradient(145deg, #111820, #08101d) !important;
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  border-color: rgba(148,163,184,.30) !important;
+}
+
+/* Perfil PC foro oscuro: cápsula oscura y nombre visible. */
+@media (min-width: 768px) {
+  html.wt-forum-dark body.reddit-page .auth-area .user-chip,
+  body.wt-forum-dark.reddit-page .auth-area .user-chip,
+  html.wt-dark-mode body.reddit-page .auth-area .user-chip,
+  body.wt-dark-mode.reddit-page .auth-area .user-chip,
+  html[data-theme="dark"] body.reddit-page .auth-area .user-chip,
+  body[data-theme="dark"].reddit-page .auth-area .user-chip,
+  body.reddit-page .auth-area .user-chip {
+    background: #111827 !important;
+    background-color: #111827 !important;
+    border-color: rgba(148,163,184,.34) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    width: auto !important;
+    min-width: 150px !important;
+    max-width: 240px !important;
+    height: 56px !important;
+    padding: 6px 14px 6px 8px !important;
+  }
+
+  html.wt-forum-dark body.reddit-page .auth-area .user-chip span,
+  body.wt-forum-dark.reddit-page .auth-area .user-chip span,
+  html.wt-dark-mode body.reddit-page .auth-area .user-chip span,
+  html[data-theme="dark"] body.reddit-page .auth-area .user-chip span,
+  body.reddit-page .auth-area .user-chip span {
+    display: inline-block !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    opacity: 1 !important;
+    max-width: 165px !important;
+  }
+}
+
+
+/* ============================================================
+   FIX v3870 — Foro PDF + modo oscuro perfil (Edison)
+   ============================================================
+   Objetivo: impedir que el modal de Nueva publicación se estire
+   cuando se selecciona un PDF, mantener los botones visibles y
+   corregir la cápsula del perfil en modo oscuro del foro.
+*/
+
+body[data-page="forum"] .modal-backdrop.forum-create-backdrop,
+body[data-page="post"] .modal-backdrop.forum-create-backdrop {
+  display: grid !important;
+  place-items: center !important;
+  align-items: center !important;
+  justify-items: center !important;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .modal-card.forum-create-modal,
+body[data-page="post"] .modal-card.forum-create-modal {
+  width: min(94vw, 590px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 28px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-radius: 26px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-head,
+body[data-page="post"] .forum-create-modal .modal-head {
+  flex: 0 0 auto !important;
+  padding: 16px 20px 8px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-body,
+body[data-page="post"] .forum-create-modal .modal-body {
+  flex: 0 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 104px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form,
+body[data-page="post"] .forum-create-modal .forum-post-form {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-content: start !important;
+  gap: 12px !important;
+  padding: 0 20px 0 !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-field,
+body[data-page="post"] .forum-create-modal .forum-field,
+body[data-page="forum"] .forum-create-modal .forum-pdf-field,
+body[data-page="post"] .forum-create-modal .forum-pdf-field {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-textarea,
+body[data-page="post"] .forum-create-modal .forum-textarea {
+  min-height: 116px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 96px !important;
+  max-height: none !important;
+  padding: 12px 14px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-pdf-dropzone {
+  min-height: 96px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-dropzone {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdfs,
+body[data-page="post"] .forum-create-modal .forum-selected-pdfs {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdfs[hidden],
+body[data-page="post"] .forum-create-modal .forum-selected-pdfs[hidden] {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 64px !important;
+  max-height: none !important;
+  display: grid !important;
+  grid-template-columns: 48px minmax(0, 1fr) 40px !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong {
+  display: block !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf button,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf button {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-create-actions,
+body[data-page="post"] .forum-create-modal .forum-create-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 20 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  width: calc(100% + 40px) !important;
+  margin: 8px -20px 0 !important;
+  padding: 12px 20px max(14px, env(safe-area-inset-bottom, 0px)) !important;
+  border-top: 1px solid rgba(148, 163, 184, .22) !important;
+  box-sizing: border-box !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-create-actions,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-create-actions {
+  background: linear-gradient(to top, rgba(8, 16, 30, .98) 86%, rgba(8, 16, 30, .72)) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal {
+  background: #0b1222 !important;
+  background-color: #0b1222 !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  border-color: rgba(148, 163, 184, .28) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-field > span,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-field > span,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-field > span,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-field > span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-input,
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-select,
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal select,
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal option,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-input,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-select,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal select,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal option,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-input,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-select,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal select,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal option,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-input,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-select,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal select,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal option {
+  background: #07142b !important;
+  background-color: #07142b !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  border-color: rgba(147, 197, 253, .34) !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-selected-pdf,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-selected-pdf,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-selected-pdf,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-selected-pdf {
+  background: #0f1b31 !important;
+  background-color: #0f1b31 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border-color: rgba(148, 163, 184, .34) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta small {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+@media (min-width: 768px) {
+  html.wt-forum-dark body[data-page="forum"] .auth-area .user-chip,
+  html.wt-dark-mode body[data-page="forum"] .auth-area .user-chip,
+  html[data-theme="dark"] body[data-page="forum"] .auth-area .user-chip,
+  body[data-page="forum"].wt-forum-dark .auth-area .user-chip,
+  body[data-page="forum"].wt-dark-mode .auth-area .user-chip {
+    background: #111827 !important;
+    background-color: #111827 !important;
+    border-color: rgba(148, 163, 184, .34) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    width: auto !important;
+    min-width: 150px !important;
+    max-width: 240px !important;
+    height: 56px !important;
+    padding: 6px 14px 6px 8px !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .26) !important;
+  }
+
+  html.wt-forum-dark body[data-page="forum"] .auth-area .user-chip span,
+  html.wt-dark-mode body[data-page="forum"] .auth-area .user-chip span,
+  html[data-theme="dark"] body[data-page="forum"] .auth-area .user-chip span,
+  body[data-page="forum"].wt-forum-dark .auth-area .user-chip span,
+  body[data-page="forum"].wt-dark-mode .auth-area .user-chip span {
+    display: inline-block !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    opacity: 1 !important;
+    max-width: 165px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html.wt-forum-dark body[data-page="forum"] .auth-area .notifications-btn,
+  html.wt-dark-mode body[data-page="forum"] .auth-area .notifications-btn,
+  html[data-theme="dark"] body[data-page="forum"] .auth-area .notifications-btn,
+  body[data-page="forum"].wt-forum-dark .auth-area .notifications-btn,
+  body[data-page="forum"].wt-dark-mode .auth-area .notifications-btn {
+    background: #111827 !important;
+    background-color: #111827 !important;
+    border-color: rgba(148, 163, 184, .34) !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+  }
+}
+
+@media (max-width: 430px), (max-height: 760px) {
+  body[data-page="forum"] .forum-create-modal .modal-head,
+  body[data-page="post"] .forum-create-modal .modal-head {
+    padding: 14px 16px 6px !important;
+  }
+  body[data-page="forum"] .forum-create-modal .modal-body,
+  body[data-page="post"] .forum-create-modal .modal-body {
+    max-height: calc(100dvh - 90px) !important;
+  }
+  body[data-page="forum"] .forum-create-modal .forum-post-form,
+  body[data-page="post"] .forum-create-modal .forum-post-form {
+    gap: 10px !important;
+    padding-inline: 16px !important;
+  }
+  body[data-page="forum"] .forum-create-modal .forum-textarea,
+  body[data-page="post"] .forum-create-modal .forum-textarea {
+    min-height: 96px !important;
+  }
+  body[data-page="forum"] .forum-create-modal .forum-create-actions,
+  body[data-page="post"] .forum-create-modal .forum-create-actions {
+    width: calc(100% + 32px) !important;
+    margin-inline: -16px !important;
+    padding-inline: 16px !important;
+  }
+}
+
+/* ============================================================
+   HOTFIX v3870 — Foro oscuro legible + modal compacto + limpieza visual
+   ============================================================ */
+
+/* El rediseño usa variables --fa-*. Las conectamos con las variables reales
+   del foro para que el modo oscuro no deje tarjetas blancas con texto claro. */
+body[data-page="forum"],
+body[data-page="post"] {
+  --fa-card: var(--forum-surface, #ffffff);
+  --fa-surface: var(--forum-surface-2, #eef4ff);
+  --fa-ink: var(--forum-text, #152033);
+  --fa-ink-2: var(--forum-muted, #64748b);
+  --fa-ink-3: var(--forum-muted, #64748b);
+  --fa-border: var(--forum-border, #dbe3ef);
+  --fa-tag-bg: var(--forum-surface-2, #eef4ff);
+  --fa-tag-fg: var(--forum-accent, #072553);
+}
+
+html.wt-forum-dark,
+html.wt-forum-dark body[data-page="forum"],
+html.wt-forum-dark body[data-page="post"],
+body.wt-forum-dark-page[data-page="forum"],
+body.wt-forum-dark-page[data-page="post"] {
+  --forum-bg: #0b0f14 !important;
+  --forum-surface: #111827 !important;
+  --forum-surface-2: #172033 !important;
+  --forum-text: #f8fafc !important;
+  --forum-muted: #a8b7d2 !important;
+  --forum-border: rgba(148, 163, 184, .20) !important;
+  --forum-button: #162033 !important;
+  --forum-accent: #5aa7ff !important;
+  --forum-cta: #2f6bff !important;
+  --fa-card: #111827 !important;
+  --fa-surface: #172033 !important;
+  --fa-ink: #f8fafc !important;
+  --fa-ink-2: #d5e0f2 !important;
+  --fa-ink-3: #9fb0ca !important;
+  --fa-border: rgba(148, 163, 184, .22) !important;
+  --fa-tag-bg: rgba(45, 125, 255, .16) !important;
+  --fa-tag-fg: #cfe4ff !important;
+}
+
+html.wt-forum-dark body[data-page="forum"],
+html.wt-forum-dark body[data-page="post"],
+body.wt-forum-dark-page[data-page="forum"],
+body.wt-forum-dark-page[data-page="post"] {
+  background: #0b0f14 !important;
+  color: #f8fafc !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-app,
+html.wt-forum-dark body[data-page="post"] .forum-app,
+body.wt-forum-dark-page[data-page="forum"] .forum-app,
+body.wt-forum-dark-page[data-page="post"] .forum-app {
+  background: #0b0f14 !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card,
+html.wt-forum-dark body[data-page="post"] .fa-post-card,
+body.wt-forum-dark-page[data-page="post"] .fa-post-card {
+  background: #111827 !important;
+  background-color: #111827 !important;
+  border-color: rgba(148, 163, 184, .22) !important;
+  color: #f8fafc !important;
+  box-shadow: none !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__author,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__title,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__title a,
+html.wt-forum-dark body[data-page="post"] .fa-post-card__author,
+html.wt-forum-dark body[data-page="post"] .fa-post-card__title,
+html.wt-forum-dark body[data-page="post"] .fa-post-card__title a,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__author,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__title,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__title a {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__preview,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__time,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__more,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__preview,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__time,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__more {
+  color: #b9c6dc !important;
+  -webkit-text-fill-color: #b9c6dc !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__divider,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__divider {
+  background: rgba(148, 163, 184, .24) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__tag,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__tag {
+  background: rgba(37, 99, 235, .18) !important;
+  color: #dbeafe !important;
+  -webkit-text-fill-color: #dbeafe !important;
+  border: 1px solid rgba(147, 197, 253, .18) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__tag--green,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card__tag--green {
+  background: rgba(16, 185, 129, .16) !important;
+  color: #b7f7df !important;
+  -webkit-text-fill-color: #b7f7df !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-vote-group,
+html.wt-forum-dark body[data-page="forum"] .fa-action-btn,
+html.wt-forum-dark body[data-page="forum"] .fa-action-icon,
+body.wt-forum-dark-page[data-page="forum"] .fa-vote-group,
+body.wt-forum-dark-page[data-page="forum"] .fa-action-btn,
+body.wt-forum-dark-page[data-page="forum"] .fa-action-icon {
+  background: #182234 !important;
+  border-color: rgba(148, 163, 184, .22) !important;
+  color: #dce8fa !important;
+  -webkit-text-fill-color: #dce8fa !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-pdf-attachment,
+body.wt-forum-dark-page[data-page="forum"] .forum-pdf-attachment,
+html.wt-forum-dark body[data-page="post"] .forum-pdf-attachment,
+body.wt-forum-dark-page[data-page="post"] .forum-pdf-attachment {
+  background: #101a2c !important;
+  border-color: rgba(148, 163, 184, .24) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-pdf-attachment .forum-pdf-meta strong,
+html.wt-forum-dark body[data-page="forum"] .forum-pdf-attachment .forum-pdf-meta small,
+body.wt-forum-dark-page[data-page="forum"] .forum-pdf-attachment .forum-pdf-meta strong,
+body.wt-forum-dark-page[data-page="forum"] .forum-pdf-attachment .forum-pdf-meta small {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+/* Nueva publicación: no se agranda al seleccionar imagen/PDF. */
+body[data-page="forum"] .forum-create-modal.modal-card,
+body[data-page="forum"] .modal-card.forum-create-modal,
+body[data-page="post"] .forum-create-modal.modal-card,
+body[data-page="post"] .modal-card.forum-create-modal {
+  width: min(94vw, 620px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 24px) !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  overflow: hidden !important;
+  align-self: center !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-head,
+body[data-page="post"] .forum-create-modal .modal-head {
+  padding: 14px 18px 8px !important;
+  flex-shrink: 0 !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-body,
+body[data-page="post"] .forum-create-modal .modal-body {
+  min-height: 0 !important;
+  max-height: calc(100dvh - 96px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form,
+body[data-page="post"] .forum-create-modal .forum-post-form {
+  gap: 10px !important;
+  align-content: start !important;
+  padding: 0 18px 0 !important;
+  min-height: 0 !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-textarea,
+body[data-page="post"] .forum-create-modal .forum-textarea,
+body[data-page="forum"] .forum-create-modal textarea,
+body[data-page="post"] .forum-create-modal textarea {
+  min-height: 92px !important;
+  max-height: 150px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone {
+  min-height: 76px !important;
+  padding: 10px 12px !important;
+  border-radius: 18px !important;
+  gap: 4px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone small,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone small {
+  line-height: 1.25 !important;
+  max-width: 92% !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+body[data-page="post"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+body[data-page="forum"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-dropzone {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images],
+body[data-page="post"] .forum-create-modal [data-forum-selected-images] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  max-height: 184px !important;
+  overflow-y: auto !important;
+  padding-right: 2px !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images][hidden],
+body[data-page="post"] .forum-create-modal [data-forum-selected-images][hidden] {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image,
+body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image {
+  height: 118px !important;
+  min-height: 118px !important;
+  max-height: 118px !important;
+  aspect-ratio: auto !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main,
+body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdfs,
+body[data-page="post"] .forum-create-modal .forum-selected-pdfs {
+  margin: 0 !important;
+  gap: 8px !important;
+  min-height: 0 !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf {
+  min-height: 56px !important;
+  grid-template-columns: 44px minmax(0, 1fr) 36px !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-badge,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-badge {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  border-radius: 14px !important;
+  font-size: 12px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf .forum-pdf-meta strong {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-create-actions,
+body[data-page="post"] .forum-create-modal .forum-create-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 30 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  width: calc(100% + 36px) !important;
+  margin: 4px -18px 0 !important;
+  padding: 10px 18px max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  background: linear-gradient(to top, var(--forum-surface, #ffffff) 88%, rgba(255,255,255,0)) !important;
+  border-top: 1px solid var(--forum-border, rgba(148,163,184,.18)) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-create-actions,
+body.wt-forum-dark-page[data-page="forum"] .forum-create-modal .forum-create-actions,
+body.wt-forum-dark-page[data-page="post"] .forum-create-modal .forum-create-actions {
+  background: linear-gradient(to top, rgba(17,24,39,.98) 88%, rgba(17,24,39,0)) !important;
+}
+
+@media (max-height: 760px) {
+  body[data-page="forum"] .forum-create-modal .forum-textarea,
+  body[data-page="post"] .forum-create-modal .forum-textarea,
+  body[data-page="forum"] .forum-create-modal textarea,
+  body[data-page="post"] .forum-create-modal textarea {
+    min-height: 74px !important;
+    max-height: 110px !important;
+  }
+  body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-upload-dropzone {
+    min-height: 62px !important;
+  }
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image,
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image {
+    height: 94px !important;
+    min-height: 94px !important;
+    max-height: 94px !important;
+  }
+}
+
+
+/* ============================================================
+   FIX v3870 — Modal de publicación PC + barra real de subida
+   ============================================================ */
+body[data-page="forum"] .modal-backdrop:has(.forum-create-modal),
+body[data-page="post"] .modal-backdrop:has(.forum-create-modal) {
+  place-items: center !important;
+  align-items: center !important;
+  justify-items: center !important;
+  padding: clamp(10px, 2vw, 24px) !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .modal-card.forum-create-modal,
+body[data-page="post"] .modal-card.forum-create-modal,
+body[data-page="forum"] .forum-create-modal.modal-card,
+body[data-page="post"] .forum-create-modal.modal-card {
+  width: min(calc(100vw - 28px), 720px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: min(88dvh, 760px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-head,
+body[data-page="post"] .forum-create-modal .modal-head {
+  flex: 0 0 auto !important;
+  padding: 16px 22px 10px !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-body,
+body[data-page="post"] .forum-create-modal .modal-body {
+  flex: 0 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(min(88dvh, 760px) - 74px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form,
+body[data-page="post"] .forum-create-modal .forum-post-form {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  padding: 0 22px 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-field,
+body[data-page="post"] .forum-create-modal .forum-field {
+  min-height: 0 !important;
+  margin: 0 !important;
+  gap: 7px !important;
+  overflow: visible !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-textarea,
+body[data-page="post"] .forum-create-modal .forum-textarea {
+  min-height: 96px !important;
+  max-height: 155px !important;
+  resize: vertical !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone,
+body[data-page="forum"] .forum-create-modal .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-pdf-dropzone {
+  min-height: 88px !important;
+  max-height: none !important;
+  padding: 12px 14px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone small,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone small {
+  max-width: 520px !important;
+  line-height: 1.28 !important;
+}
+
+/* En PC, al seleccionar imagen se oculta el cuadro grande y queda solo una previa compacta. */
+@media (min-width: 768px) {
+  body[data-page="forum"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone {
+    display: none !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images],
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image,
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image {
+    width: 100% !important;
+    height: clamp(108px, 14dvh, 152px) !important;
+    min-height: 108px !important;
+    max-height: 152px !important;
+    aspect-ratio: 16 / 9 !important;
+    border-radius: 18px !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main,
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-dropzone {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdfs,
+body[data-page="post"] .forum-create-modal .forum-selected-pdfs {
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-create-actions,
+body[data-page="post"] .forum-create-modal .forum-create-actions {
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 30 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  width: calc(100% + 44px) !important;
+  margin: 4px -22px 0 !important;
+  padding: 12px 22px max(14px, env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box !important;
+  border-top: 1px solid rgba(148, 163, 184, .20) !important;
+  background: linear-gradient(to top, rgba(248, 251, 255, .98) 86%, rgba(248, 251, 255, .72)) !important;
+  box-shadow: 0 -14px 22px rgba(15, 23, 42, .06) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-create-actions,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html.wt-dark-mode body[data-page="post"] .forum-create-modal .forum-create-actions,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html[data-theme="dark"] body[data-page="post"] .forum-create-modal .forum-create-actions {
+  background: linear-gradient(to top, rgba(8, 15, 30, .98) 86%, rgba(8, 15, 30, .72)) !important;
+  border-top-color: rgba(148, 163, 184, .24) !important;
+  box-shadow: 0 -14px 24px rgba(0, 0, 0, .28) !important;
+}
+
+/* Barra de subida real: no texto suelto, diseño integrado al modal. */
+body[data-page="forum"] .forum-create-modal .forum-upload-progress,
+body[data-page="post"] .forum-create-modal .forum-upload-progress,
+.forum-upload-progress {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(37, 99, 235, .18) !important;
+  background: linear-gradient(145deg, rgba(239, 246, 255, .96), rgba(255, 255, 255, .82)) !important;
+  color: #0b1b35 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72), 0 10px 24px rgba(15, 23, 42, .08) !important;
+  box-sizing: border-box !important;
+}
+
+.forum-upload-progress-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 9px !important;
+  line-height: 1 !important;
+}
+
+.forum-upload-progress-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  color: #10203d !important;
+  -webkit-text-fill-color: #10203d !important;
+  font-size: .88rem !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.forum-upload-progress-label::before {
+  content: "" !important;
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  border-radius: 999px !important;
+  background: #2563eb !important;
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, .12) !important;
+}
+
+.forum-upload-progress-value {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 48px !important;
+  height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  background: rgba(37, 99, 235, .10) !important;
+  color: #0b3f9c !important;
+  -webkit-text-fill-color: #0b3f9c !important;
+  font-size: .82rem !important;
+  font-weight: 950 !important;
+}
+
+.forum-upload-progress-track,
+.forum-upload-progress > div:not(.forum-upload-progress-head) {
+  position: relative !important;
+  height: 12px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  border-radius: 999px !important;
+  background: rgba(148, 163, 184, .22) !important;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, .12) !important;
+}
+
+.forum-upload-progress-track > i,
+.forum-upload-progress > div:not(.forum-upload-progress-head) > i {
+  display: block !important;
+  height: 100% !important;
+  width: 0;
+  border-radius: inherit !important;
+  background: linear-gradient(90deg, #0b5ed7, #2f80ff, #38bdf8) !important;
+  box-shadow: 0 0 18px rgba(47, 128, 255, .45) !important;
+  transition: width .22s ease !important;
+}
+
+html.wt-forum-dark .forum-upload-progress,
+html.wt-dark-mode .forum-upload-progress,
+html[data-theme="dark"] .forum-upload-progress,
+body.wt-forum-dark .forum-upload-progress,
+body.wt-dark-mode .forum-upload-progress {
+  background: linear-gradient(145deg, rgba(15, 27, 49, .98), rgba(7, 20, 43, .96)) !important;
+  border-color: rgba(147, 197, 253, .24) !important;
+  color: #f8fafc !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 14px 26px rgba(0,0,0,.26) !important;
+}
+
+html.wt-forum-dark .forum-upload-progress-label,
+html.wt-dark-mode .forum-upload-progress-label,
+html[data-theme="dark"] .forum-upload-progress-label,
+body.wt-forum-dark .forum-upload-progress-label,
+body.wt-dark-mode .forum-upload-progress-label {
+  color: #eaf2ff !important;
+  -webkit-text-fill-color: #eaf2ff !important;
+}
+
+html.wt-forum-dark .forum-upload-progress-value,
+html.wt-dark-mode .forum-upload-progress-value,
+html[data-theme="dark"] .forum-upload-progress-value,
+body.wt-forum-dark .forum-upload-progress-value,
+body.wt-dark-mode .forum-upload-progress-value {
+  background: rgba(96, 165, 250, .16) !important;
+  color: #bfdbfe !important;
+  -webkit-text-fill-color: #bfdbfe !important;
+}
+
+html.wt-forum-dark .forum-upload-progress-track,
+html.wt-dark-mode .forum-upload-progress-track,
+html[data-theme="dark"] .forum-upload-progress-track,
+body.wt-forum-dark .forum-upload-progress-track,
+body.wt-dark-mode .forum-upload-progress-track {
+  background: rgba(148, 163, 184, .18) !important;
+}
+
+/* Publicaciones legibles en modo oscuro. */
+html.wt-forum-dark body[data-page="forum"] .fa-post-card,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card,
+body.wt-forum-dark-page[data-page="forum"] .fa-post-card,
+body.reddit-page[data-page="forum"] .fa-post-card {
+  background: linear-gradient(145deg, #0f172a, #111827) !important;
+  border-color: rgba(148, 163, 184, .26) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, .28) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__author,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__title,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__body,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__time,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card__author,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card__title,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card__body,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card__time,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card__author,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card__title,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card__body,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card__time,
+body.reddit-page[data-page="forum"] .fa-post-card__author,
+body.reddit-page[data-page="forum"] .fa-post-card__title,
+body.reddit-page[data-page="forum"] .fa-post-card__body,
+body.reddit-page[data-page="forum"] .fa-post-card__time {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__body,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card__body,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card__body,
+body.reddit-page[data-page="forum"] .fa-post-card__body,
+html.wt-forum-dark body[data-page="forum"] .fa-post-card__time,
+html.wt-dark-mode body[data-page="forum"] .fa-post-card__time,
+html[data-theme="dark"] body[data-page="forum"] .fa-post-card__time,
+body.reddit-page[data-page="forum"] .fa-post-card__time {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+/* ============================================================
+   FIX v3871 — Modal Nueva publicación PC sin deformación + progreso oscuro real
+   ============================================================
+   Nota: este bloque va al final porque forum-dark.css es el último CSS cargado
+   en foro.html/post.html. Pisa los hotfix viejos que usaban grid/flex 1fr y
+   hacían que el modal creciera dejando espacio vacío en PC.
+*/
+
+body[data-page="forum"] .modal-backdrop:has(.forum-create-modal),
+body[data-page="post"] .modal-backdrop:has(.forum-create-modal),
+body[data-page="forum"] .modal-backdrop.forum-create-backdrop,
+body[data-page="post"] .modal-backdrop.forum-create-backdrop {
+  display: grid !important;
+  place-items: center !important;
+  align-items: center !important;
+  justify-items: center !important;
+  padding: clamp(12px, 2.2vw, 26px) !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .modal-backdrop .modal-card.forum-create-modal,
+body[data-page="post"] .modal-backdrop .modal-card.forum-create-modal,
+body[data-page="forum"] .forum-create-modal.modal-card,
+body[data-page="post"] .forum-create-modal.modal-card {
+  width: min(94vw, 720px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 32px) !important;
+  display: block !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+  align-self: center !important;
+  justify-self: center !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-head,
+body[data-page="post"] .forum-create-modal .modal-head {
+  display: flex !important;
+  flex: none !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 14px 22px 8px !important;
+  min-height: 0 !important;
+}
+
+body[data-page="forum"] .forum-create-modal .modal-body,
+body[data-page="post"] .forum-create-modal .modal-body {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 96px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form,
+body[data-page="post"] .forum-create-modal .forum-post-form {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-content: start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 22px 0 !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-field,
+body[data-page="post"] .forum-create-modal .forum-field,
+body[data-page="forum"] .forum-create-modal .forum-image-field,
+body[data-page="post"] .forum-create-modal .forum-image-field,
+body[data-page="forum"] .forum-create-modal .forum-pdf-field,
+body[data-page="post"] .forum-create-modal .forum-pdf-field {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 7px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-textarea,
+body[data-page="post"] .forum-create-modal .forum-textarea,
+body[data-page="forum"] .forum-create-modal textarea.forum-textarea,
+body[data-page="post"] .forum-create-modal textarea.forum-textarea {
+  min-height: 92px !important;
+  max-height: 150px !important;
+  resize: vertical !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone,
+body[data-page="forum"] .forum-create-modal .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-pdf-dropzone {
+  min-height: 82px !important;
+  max-height: none !important;
+  padding: 11px 14px !important;
+  gap: 4px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-upload-dropzone small,
+body[data-page="post"] .forum-create-modal .forum-upload-dropzone small {
+  max-width: 560px !important;
+  line-height: 1.24 !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+body[data-page="post"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+body[data-page="forum"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-field .forum-pdf-dropzone,
+body[data-page="post"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-field .forum-pdf-dropzone {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images],
+body[data-page="post"] .forum-create-modal [data-forum-selected-images] {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)) !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  max-height: 172px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images][hidden],
+body[data-page="post"] .forum-create-modal [data-forum-selected-images][hidden] {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image,
+body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image {
+  width: 100% !important;
+  height: clamp(96px, 13dvh, 140px) !important;
+  min-height: 96px !important;
+  max-height: 140px !important;
+  aspect-ratio: auto !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main,
+body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main {
+  display: block !important;
+  position: static !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdfs,
+body[data-page="post"] .forum-create-modal .forum-selected-pdfs {
+  display: grid !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdfs[hidden],
+body[data-page="post"] .forum-create-modal .forum-selected-pdfs[hidden] {
+  display: none !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-selected-pdf,
+body[data-page="post"] .forum-create-modal .forum-selected-pdf {
+  min-height: 56px !important;
+  grid-template-columns: 44px minmax(0, 1fr) 36px !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+body[data-page="forum"] .forum-create-modal .forum-create-actions,
+body[data-page="post"] .forum-create-modal .forum-create-actions {
+  position: static !important;
+  bottom: auto !important;
+  z-index: 3 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 12px !important;
+  width: calc(100% + 44px) !important;
+  margin: 4px -22px 0 !important;
+  padding: 12px 22px 14px !important;
+  border-top: 1px solid rgba(148, 163, 184, .20) !important;
+  background: var(--forum-surface, var(--color-card, #ffffff)) !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-create-actions,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html.wt-dark-mode body[data-page="post"] .forum-create-modal .forum-create-actions,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-create-actions,
+html[data-theme="dark"] body[data-page="post"] .forum-create-modal .forum-create-actions,
+body.wt-forum-dark-page[data-page="forum"] .forum-create-modal .forum-create-actions,
+body.wt-forum-dark-page[data-page="post"] .forum-create-modal .forum-create-actions {
+  background: #0b1222 !important;
+  border-top-color: rgba(148, 163, 184, .24) !important;
+}
+
+@media (max-width: 640px) {
+  body[data-page="forum"] .forum-create-modal .forum-create-actions,
+  body[data-page="post"] .forum-create-modal .forum-create-actions {
+    position: sticky !important;
+    bottom: 0 !important;
+    width: calc(100% + 32px) !important;
+    margin: 4px -16px 0 !important;
+    padding: 10px 16px max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-post-form,
+  body[data-page="post"] .forum-create-modal .forum-post-form {
+    padding-inline: 16px !important;
+  }
+}
+
+/* Barra real de subida: en modo oscuro NO puede heredar la versión blanca. */
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-upload-progress,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-upload-progress,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-upload-progress,
+html.wt-dark-mode body[data-page="post"] .forum-create-modal .forum-upload-progress,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-upload-progress,
+html[data-theme="dark"] body[data-page="post"] .forum-create-modal .forum-upload-progress,
+body.wt-forum-dark-page[data-page="forum"] .forum-create-modal .forum-upload-progress,
+body.wt-forum-dark-page[data-page="post"] .forum-create-modal .forum-upload-progress {
+  background: linear-gradient(145deg, #0f1b31, #07142b) !important;
+  background-color: #0f1b31 !important;
+  border-color: rgba(147, 197, 253, .30) !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 14px 26px rgba(0,0,0,.28) !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-upload-progress-label,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-upload-progress-label,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-upload-progress-label,
+html.wt-dark-mode body[data-page="post"] .forum-create-modal .forum-upload-progress-label,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-upload-progress-label,
+html[data-theme="dark"] body[data-page="post"] .forum-create-modal .forum-upload-progress-label,
+body.wt-forum-dark-page[data-page="forum"] .forum-create-modal .forum-upload-progress-label,
+body.wt-forum-dark-page[data-page="post"] .forum-create-modal .forum-upload-progress-label {
+  color: #eaf2ff !important;
+  -webkit-text-fill-color: #eaf2ff !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-upload-progress-value,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-upload-progress-value,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-upload-progress-value,
+html.wt-dark-mode body[data-page="post"] .forum-create-modal .forum-upload-progress-value,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-upload-progress-value,
+html[data-theme="dark"] body[data-page="post"] .forum-create-modal .forum-upload-progress-value,
+body.wt-forum-dark-page[data-page="forum"] .forum-create-modal .forum-upload-progress-value,
+body.wt-forum-dark-page[data-page="post"] .forum-create-modal .forum-upload-progress-value {
+  background: rgba(96, 165, 250, .16) !important;
+  color: #bfdbfe !important;
+  -webkit-text-fill-color: #bfdbfe !important;
+}
+
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-upload-progress-track,
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-upload-progress-track,
+html.wt-dark-mode body[data-page="forum"] .forum-create-modal .forum-upload-progress-track,
+html.wt-dark-mode body[data-page="post"] .forum-create-modal .forum-upload-progress-track,
+html[data-theme="dark"] body[data-page="forum"] .forum-create-modal .forum-upload-progress-track,
+html[data-theme="dark"] body[data-page="post"] .forum-create-modal .forum-upload-progress-track,
+body.wt-forum-dark-page[data-page="forum"] .forum-create-modal .forum-upload-progress-track,
+body.wt-forum-dark-page[data-page="post"] .forum-create-modal .forum-upload-progress-track,
+html.wt-forum-dark body[data-page="forum"] .forum-create-modal .forum-upload-progress > div:not(.forum-upload-progress-head),
+html.wt-forum-dark body[data-page="post"] .forum-create-modal .forum-upload-progress > div:not(.forum-upload-progress-head) {
+  background: rgba(148, 163, 184, .18) !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.28) !important;
+}
+
+@media (min-width: 768px) and (max-height: 760px) {
+  body[data-page="forum"] .forum-create-modal .forum-textarea,
+  body[data-page="post"] .forum-create-modal .forum-textarea,
+  body[data-page="forum"] .forum-create-modal textarea.forum-textarea,
+  body[data-page="post"] .forum-create-modal textarea.forum-textarea {
+    min-height: 72px !important;
+    max-height: 108px !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-upload-dropzone,
+  body[data-page="forum"] .forum-create-modal .forum-pdf-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-pdf-dropzone {
+    min-height: 64px !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image,
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image {
+    height: 88px !important;
+    min-height: 88px !important;
+    max-height: 88px !important;
+  }
+}
+
+/* v3876 - Corrección definitiva del modal de publicación en PC.
+   El problema venía de que al aparecer la vista previa de imagen/PDF el formulario heredaba
+   reglas flex/grid anteriores y el bloque de acciones se quedaba montado sobre los campos.
+   En escritorio forzamos un flujo normal: contenido -> preview -> progreso -> botones. */
+@media (min-width: 721px) {
+  body[data-page="forum"] .modal-backdrop .modal-card.forum-create-modal,
+  body[data-page="post"] .modal-backdrop .modal-card.forum-create-modal,
+  body[data-page="forum"] .forum-create-modal.modal-card,
+  body[data-page="post"] .forum-create-modal.modal-card {
+    width: min(92vw, 760px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 48px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .modal-body,
+  body[data-page="post"] .forum-create-modal .modal-body {
+    flex: 0 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 118px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-post-form,
+  body[data-page="post"] .forum-create-modal .forum-post-form {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 22px 0 !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-field,
+  body[data-page="post"] .forum-create-modal .forum-field,
+  body[data-page="forum"] .forum-create-modal .forum-image-field,
+  body[data-page="post"] .forum-create-modal .forum-image-field,
+  body[data-page="forum"] .forum-create-modal .forum-pdf-field,
+  body[data-page="post"] .forum-create-modal .forum-pdf-field {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 0 10px !important;
+    overflow: visible !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-field > span,
+  body[data-page="post"] .forum-create-modal .forum-field > span,
+  body[data-page="forum"] .forum-create-modal .forum-image-field > span,
+  body[data-page="post"] .forum-create-modal .forum-image-field > span,
+  body[data-page="forum"] .forum-create-modal .forum-pdf-field > span,
+  body[data-page="post"] .forum-create-modal .forum-pdf-field > span {
+    display: block !important;
+    margin: 0 0 6px !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-upload-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-upload-dropzone,
+  body[data-page="forum"] .forum-create-modal .forum-pdf-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-pdf-dropzone {
+    min-height: 86px !important;
+    max-height: 118px !important;
+    padding: 12px 14px !important;
+    overflow: hidden !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-post-form.has-images-selected .forum-image-field .forum-upload-dropzone,
+  body[data-page="forum"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-field .forum-pdf-dropzone,
+  body[data-page="post"] .forum-create-modal .forum-post-form.has-pdf-selected .forum-pdf-field .forum-pdf-dropzone {
+    display: none !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images],
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)) !important;
+    gap: 8px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 128px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images][hidden],
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images][hidden] {
+    display: none !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image,
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image {
+    height: 118px !important;
+    min-height: 118px !important;
+    max-height: 118px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main,
+  body[data-page="post"] .forum-create-modal [data-forum-selected-images] .forum-selected-image-main {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-selected-pdfs,
+  body[data-page="post"] .forum-create-modal .forum-selected-pdfs,
+  body[data-page="forum"] .forum-create-modal .forum-upload-progress,
+  body[data-page="post"] .forum-create-modal .forum-upload-progress {
+    margin: 0 0 10px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  body[data-page="forum"] .forum-create-modal .forum-create-actions,
+  body[data-page="post"] .forum-create-modal .forum-create-actions {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 2px 0 0 !important;
+    padding: 14px 0 16px !important;
+    transform: none !important;
+    inset: auto !important;
+    clear: both !important;
+  }
+}
+
+/* v3876 - Botón de resumen PDF compatible con modo oscuro */
+html.wt-forum-dark body .forum-pdf-summary-trigger,
+body.wt-forum-dark .forum-pdf-summary-trigger,
+body.reddit-page .forum-pdf-summary-trigger {
+  background: rgba(13, 24, 43, .94) !important;
+  border-color: rgba(116, 158, 255, .28) !important;
+  color: #f4f7ff !important;
+}
+html.wt-forum-dark body .forum-pdf-summary-trigger small,
+body.wt-forum-dark .forum-pdf-summary-trigger small,
+body.reddit-page .forum-pdf-summary-trigger small { color: #9fb2d0 !important; }
