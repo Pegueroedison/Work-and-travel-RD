@@ -293,7 +293,7 @@
     const user = await WT.getCurrentUser?.().catch(() => null);
     if (!WT.supabase || !user?.id) return [];
     try {
-      // V4061: no usamos embedded foreign tables aquí porque Supabase puede marcar
+      // V4062: no usamos embedded foreign tables aquí porque Supabase puede marcar
       // la relación como ambigua al existir requester_id y receiver_id hacia user_profiles.
       // Primero buscamos los IDs de amistades aceptadas y luego cargamos perfiles públicos.
       const { data: rows, error } = await WT.supabase
@@ -352,10 +352,10 @@
       reason: String(user.reason || "").trim()
     });
 
-    // V4061: primero intenta usar la función RPC inteligente.
+    // V4062: primero intenta usar la función RPC inteligente.
     // Si el SQL todavía no está instalado, cae al comportamiento anterior.
     try {
-      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4061", {
+      const { data, error } = await WT.supabase.rpc("search_mention_candidates_v4062", {
         search_text: query,
         result_limit: canSearchBroad ? (query ? 20 : 30) : 10
       });
@@ -363,7 +363,7 @@
       const candidates = (data || []).map(normalizeCandidate).filter(u => u?.username);
       if (candidates.length) return candidates;
 
-      // V4061: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
+      // V4062: si la RPC está instalada pero devuelve vacío, no dejamos la lista muerta.
       // Con @ vacío o 1 letra, regresamos a la lógica local de amigos.
       // Con 2+ letras, abajo se usa la búsqueda limitada anterior como respaldo.
       if (canSearchBroad && !query) return [];
@@ -544,7 +544,8 @@
   }
 
   function renderAuthorTrigger(author = {}, { compact = false } = {}) {
-    const authorName = author.full_name || "Estudiante";
+    const authorName = author.full_name || author.username || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || authorName || "");
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const badges = WT.renderUserBadges(author.badges || []);
     const payload = authorPayloadAttr(author);
@@ -3145,7 +3146,8 @@
     const category   = post.forum_categories?.name || "Foro";
     const body       = post.body || "";
     const excerpt    = renderMentions(body.slice(0, 200)) + (body.length > 200 ? "…" : "");
-    const authorName = author.full_name || "Estudiante";
+    const authorName = author.full_name || author.username || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || authorName || "");
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const postImage  = renderAttachmentGallery(post, "post");
     const url        = postUrl(post.id);
@@ -3644,7 +3646,8 @@
       const parent = parentId ? byId.get(parentId) : null;
       if (parent) {
         comment.reply_to_author = parent.author || null;
-        comment.reply_to_author_name = parent.author?.full_name || "Estudiante";
+        comment.reply_to_author_name = parent.author?.full_name || parent.author?.username || "Estudiante";
+        comment.reply_to_author_username = normalizeMentionUsername(parent.author?.username || parent.author?.full_name || "");
         parent.children.push(comment);
       } else {
         roots.push(comment);
@@ -3661,8 +3664,10 @@
 
   function renderReplyTarget(comment, depth = 0) {
     if (!comment.parent_comment_id || depth <= 0) return "";
-    const name = comment.reply_to_author_name || comment.reply_to_author?.full_name || "Estudiante";
-    return `<span class="ig-reply-prefix">@${WT.escapeHTML(name)}</span>`;
+    const username = normalizeMentionUsername(comment.reply_to_author_username || comment.reply_to_author?.username || "");
+    const fallback = normalizeMentionUsername(comment.reply_to_author_name || comment.reply_to_author?.full_name || "");
+    const handle = username || fallback;
+    return handle ? `<span class="ig-reply-prefix">@${WT.escapeHTML(handle)}</span>` : "";
   }
 
   function canManageForumComments() {
@@ -3930,7 +3935,8 @@
     const author = comment.author || {};
     const safeDepth = depth > 0 ? 1 : 0;
     const isLiked = state.likedComments.has(comment.id);
-    const authorName = author.full_name || "Estudiante";
+    const authorName = author.full_name || author.username || "Estudiante";
+    const authorUsername = normalizeMentionUsername(author.username || authorName || "");
     const authorAvatar = WT.escapeHTML(WT.sanitizeImageUrl(author.photo_url, "images/placeholder-avatar.png"));
     const replyPrefix = renderReplyTarget(comment, depth);
     const isPending = String(comment.status || "approved").toLowerCase() === "pending";
@@ -3952,7 +3958,7 @@
         <p class="ig-comment-text">${replyPrefix}${renderMentions(comment.body)}</p>
         ${renderAttachmentGallery(comment, "comment")}
         <div class="ig-comment-actions">
-          <button class="ig-comment-action" data-reply-comment="${comment.id}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
+          <button class="ig-comment-action" data-reply-comment="${comment.id}" data-reply-author-id="${WT.escapeHTML(comment.author_id || author.id || '')}" data-reply-author="${WT.escapeHTML(authorName)}" data-reply-username="${WT.escapeHTML(authorUsername)}" data-reply-body="${WT.escapeHTML(String(comment.body || '').slice(0, 180))}" data-reply-avatar="${authorAvatar}" type="button">Responder</button>
           <button class="ig-comment-action ig-comment-report" data-report-comment="${comment.id}" type="button">Reportar</button>
           ${canManageForumComments() && isPending ? `<button class="ig-comment-action ig-admin-approve" data-approve-comment="${WT.escapeHTML(comment.id)}" type="button">Aprobar</button>` : ""}
           ${canDeleteForumContent(comment, author) ? `<button class="ig-comment-action ig-admin-delete" data-delete-comment="${WT.escapeHTML(comment.id)}" type="button">Eliminar</button>` : ""}
@@ -4018,9 +4024,12 @@
     bindPublicProfileTriggers(root);
   }
 
-  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "") {
+  function setReplyTarget(commentId, authorName = "comentario", replyBody = "", replyAvatar = "", authorId = "", username = "") {
+    const cleanUsername = normalizeMentionUsername(username || "");
     state.replyingTo = commentId ? {
       id: commentId,
+      author_id: authorId || "",
+      username: cleanUsername,
       authorName,
       body: String(replyBody || "").slice(0, 180),
       avatar: WT.sanitizeImageUrl(replyAvatar || "", "images/placeholder-avatar.png")
@@ -4061,6 +4070,10 @@
     if (input) {
       input.placeholder = state.replyingTo ? "Escribe tu respuesta..." : "¿Qué opinas sobre esto?";
       if (state.replyingTo) {
+        if (state.replyingTo.username && !String(input.value || "").trim()) {
+          input.value = `@${state.replyingTo.username} `;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
         try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
         scrollComposerAboveKeyboard();
         setTimeout(syncCommentComposerKeyboard, 60);
@@ -4579,7 +4592,16 @@
       }
 
       const reply = e.target.closest("[data-reply-comment]");
-      if (reply) setReplyTarget(reply.dataset.replyComment, reply.dataset.replyAuthor || "comentario", reply.dataset.replyBody || "", reply.dataset.replyAvatar || "");
+      if (reply) {
+        setReplyTarget(
+          reply.dataset.replyComment,
+          reply.dataset.replyAuthor || "comentario",
+          reply.dataset.replyBody || "",
+          reply.dataset.replyAvatar || "",
+          reply.dataset.replyAuthorId || "",
+          reply.dataset.replyUsername || ""
+        );
+      }
 
       const toggleReplies = e.target.closest("[data-toggle-comment-replies]");
       if (toggleReplies) {
