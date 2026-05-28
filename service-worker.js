@@ -1,4 +1,4 @@
-const WT_CACHE = "wt-guide-rd-v4058-smart-mentions-ranking";
+const WT_CACHE = "wt-guide-rd-v4059-resume-session-no-file-break";
 self.addEventListener("install", event => { self.skipWaiting(); });
 self.addEventListener("activate", event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== WT_CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
