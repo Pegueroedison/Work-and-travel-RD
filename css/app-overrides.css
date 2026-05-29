@@ -15474,7 +15474,7 @@ html.wt-forum-dark .comment-reply-context{
 
 
 /* ==========================================================
-   V4071 - Menciones inteligentes: motivo del resultado
+   V4072 - Menciones inteligentes: motivo del resultado
    ========================================================== */
 .forum-mention-option-text small {
   display: flex !important;
@@ -15520,7 +15520,7 @@ body.wt-dark-mode .forum-mention-option-text small em {
 }
 
 /* ==========================================================
-   V4071 - Menciones: etiquetas claras, no mostrar "Admin" como motivo
+   V4072 - Menciones: etiquetas claras, no mostrar "Admin" como motivo
    ========================================================== */
 .forum-mention-option-text small em {
   max-width: 150px !important;
@@ -15529,7 +15529,7 @@ body.wt-dark-mode .forum-mention-option-text small em {
   display: none !important;
 }
 
-/* V4071 - El @usuario automático de una respuesta también abre el perfil público */
+/* V4072 - El @usuario automático de una respuesta también abre el perfil público */
 .ig-comment-text .ig-reply-prefix.forum-mention-link {
   appearance: none !important;
   border: 0 !important;
@@ -15552,7 +15552,7 @@ body.wt-dark-mode .forum-mention-option-text small em {
 }
 
 /* ==========================================================
-   V4071 - Corrección visual de modales en claro/oscuro
+   V4072 - Corrección visual de modales en claro/oscuro
    - Perfil público abierto desde comentarios: botón inferior visible en modo claro.
    - Selector de país en Mi perfil: no cambia a fondo oscuro dentro del modal claro.
    - Login/registro desde foro oscuro: contraste correcto.
@@ -15759,4 +15759,336 @@ html.wt-forum-dark body .modal-backdrop .modal-card.update-password-modal .modal
   color: #0b2f6b !important;
   -webkit-text-fill-color: #0b2f6b !important;
   border: 1px solid rgba(147,197,253,.28) !important;
+}
+
+/* ==========================================================
+   V4072 - Amigos: secciones desplegables con scroll interno
+   ========================================================== */
+.friends-modal.modal-card {
+  width: min(94vw, 680px) !important;
+  max-height: min(92dvh, 860px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.friends-modal .modal-body {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: 12px !important;
+}
+
+.friends-modal .modal-actions {
+  flex: 0 0 auto !important;
+  padding-top: 10px !important;
+}
+
+.friends-shell {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.friends-search {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 2 !important;
+}
+
+.friends-panel {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.friends-section.friends-accordion {
+  padding: 0 !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border-radius: 22px !important;
+}
+
+.friends-accordion-head {
+  width: 100% !important;
+  min-height: 58px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  text-align: left !important;
+  cursor: pointer !important;
+}
+
+.friends-accordion-title {
+  color: #0f1b33 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.02em !important;
+  font-size: 1rem !important;
+}
+
+.friends-accordion-side {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 0 0 auto !important;
+}
+
+.friends-count {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  background: rgba(0,30,255,.10) !important;
+  color: #001eff !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+}
+
+.friends-chevron {
+  width: 28px !important;
+  height: 28px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  background: rgba(11,47,107,.07) !important;
+  color: #0b2f6b !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  transition: transform .18s ease !important;
+}
+
+.friends-accordion.is-open .friends-chevron {
+  transform: rotate(180deg) !important;
+}
+
+.friends-accordion-body {
+  padding: 0 14px 14px !important;
+}
+
+.friends-accordion-body[hidden] {
+  display: none !important;
+}
+
+.friends-accordion-body .friends-list {
+  max-height: min(34dvh, 330px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-right: 2px !important;
+}
+
+.friends-section:not(.is-open) {
+  background: rgba(255,255,255,.64) !important;
+}
+
+.friends-section.is-open {
+  background: rgba(255,255,255,.82) !important;
+}
+
+.friends-section.is-open .friend-empty {
+  padding: 11px 12px !important;
+}
+
+@media (max-width: 520px) {
+  .friends-modal.modal-card {
+    max-height: calc(100dvh - 24px) !important;
+  }
+
+  .friends-modal .modal-body {
+    padding-inline: 14px !important;
+  }
+
+  .friends-search {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  .friends-accordion-head {
+    min-height: 54px !important;
+    padding: 13px 14px !important;
+  }
+
+  .friends-accordion-body {
+    padding: 0 12px 12px !important;
+  }
+
+  .friends-accordion-body .friends-list {
+    max-height: min(32dvh, 270px) !important;
+  }
+
+  .friends-count,
+  .friends-chevron {
+    min-width: 26px !important;
+    width: 26px !important;
+    height: 26px !important;
+  }
+}
+
+html.wt-dark-mode .friends-accordion-title,
+html.wt-forum-dark .friends-accordion-title,
+body.wt-dark-mode .friends-accordion-title {
+  color: #e8f1ff !important;
+}
+
+html.wt-dark-mode .friends-count,
+html.wt-forum-dark .friends-count,
+body.wt-dark-mode .friends-count {
+  background: rgba(59,130,246,.18) !important;
+  color: #dbeafe !important;
+}
+
+html.wt-dark-mode .friends-chevron,
+html.wt-forum-dark .friends-chevron,
+body.wt-dark-mode .friends-chevron {
+  background: rgba(148,163,184,.16) !important;
+  color: #e8f1ff !important;
+}
+
+html.wt-dark-mode .friends-section:not(.is-open),
+html.wt-forum-dark .friends-section:not(.is-open),
+body.wt-dark-mode .friends-section:not(.is-open) {
+  background: rgba(15,23,42,.60) !important;
+}
+
+html.wt-dark-mode .friends-section.is-open,
+html.wt-forum-dark .friends-section.is-open,
+body.wt-dark-mode .friends-section.is-open {
+  background: rgba(15,23,42,.78) !important;
+}
+
+
+/* ==========================================================
+   v4073 — Amigos: acordeones reales y compactos
+   ========================================================== */
+.friends-modal.modal-card {
+  width: min(94vw, 680px) !important;
+  max-height: min(92dvh, 820px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.friends-modal .modal-body {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+.friends-shell,
+.friends-panel {
+  display: grid !important;
+  gap: 10px !important;
+}
+.friends-panel > .friends-section.friends-accordion,
+details.friends-section.friends-accordion {
+  display: block !important;
+  padding: 0 !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(11,47,107,.10) !important;
+  background: rgba(255,255,255,.72) !important;
+  box-shadow: none !important;
+}
+.friends-accordion-head,
+details.friends-accordion > summary.friends-accordion-head {
+  list-style: none !important;
+  width: 100% !important;
+  min-height: 58px !important;
+  border: 0 !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+details.friends-accordion > summary.friends-accordion-head::-webkit-details-marker {
+  display: none !important;
+}
+.friends-accordion-title {
+  color: #0f1b33 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.02em !important;
+  font-size: clamp(1rem, 4.3vw, 1.12rem) !important;
+  line-height: 1.1 !important;
+}
+.friends-accordion-side {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 0 0 auto !important;
+}
+.friends-count {
+  min-width: 28px !important;
+  height: 28px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0,30,255,.10) !important;
+  color: #001eff !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+}
+.friends-chevron {
+  width: 28px !important;
+  height: 28px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  background: rgba(11,47,107,.07) !important;
+  color: #0b2f6b !important;
+  transition: transform .18s ease !important;
+}
+details.friends-accordion[open] .friends-chevron,
+.friends-accordion.is-open .friends-chevron {
+  transform: rotate(180deg) !important;
+}
+.friends-accordion-body {
+  padding: 0 14px 14px !important;
+  display: none !important;
+}
+details.friends-accordion[open] > .friends-accordion-body,
+.friends-accordion.is-open > .friends-accordion-body {
+  display: block !important;
+}
+.friends-accordion-body .friends-list {
+  max-height: min(34dvh, 320px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  display: grid !important;
+  gap: 8px !important;
+  padding-right: 2px !important;
+}
+.friends-accordion:not([open]) .friends-accordion-body {
+  display: none !important;
+}
+.friends-modal .modal-actions {
+  flex: 0 0 auto !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 3 !important;
+  background: linear-gradient(to top, rgba(245,248,255,.98), rgba(245,248,255,.72)) !important;
+  padding-top: 12px !important;
+}
+@media (max-width: 520px) {
+  .friends-modal .modal-body { padding-inline: 12px !important; }
+  .friends-accordion-head,
+  details.friends-accordion > summary.friends-accordion-head { min-height: 54px !important; padding: 13px 14px !important; }
+  .friends-accordion-body .friends-list { max-height: min(30dvh, 240px) !important; }
+}
+html.wt-dark-mode details.friends-section.friends-accordion,
+html.wt-forum-dark details.friends-section.friends-accordion,
+body.wt-dark-mode details.friends-section.friends-accordion {
+  background: rgba(15,23,42,.72) !important;
+  border-color: rgba(148,163,184,.16) !important;
+}
+html.wt-dark-mode .friends-modal .modal-actions,
+html.wt-forum-dark .friends-modal .modal-actions,
+body.wt-dark-mode .friends-modal .modal-actions {
+  background: linear-gradient(to top, rgba(2,8,23,.98), rgba(2,8,23,.72)) !important;
 }

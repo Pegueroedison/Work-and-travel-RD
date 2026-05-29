@@ -762,24 +762,45 @@
     return `<div class="friend-empty">${WT.escapeHTML(text)}</div>`;
   }
 
+  function renderFriendsAccordionSection({ id, title, count = 0, rows = [], kind = "friend", empty = "No hay resultados.", open = false } = {}) {
+    const content = rows.length ? rows.map(x => renderFriendRow(x, kind)).join("") : renderFriendEmpty(empty);
+    return `<details class="friends-section friends-accordion ${open ? "is-open" : ""}" data-friends-section="${WT.escapeHTML(id)}" ${open ? "open" : ""}>
+      <summary class="friends-accordion-head" data-friends-summary="${WT.escapeHTML(id)}">
+        <span class="friends-accordion-title">${WT.escapeHTML(title)}</span>
+        <span class="friends-accordion-side"><span class="friends-count">${Number(count || 0)}</span><span class="friends-chevron" aria-hidden="true">⌄</span></span>
+      </summary>
+      <div class="friends-accordion-body">
+        <div class="friends-list">${content}</div>
+      </div>
+    </details>`;
+  }
+
+  function bindFriendsAccordions(container) {
+    if (!container) return;
+    container.querySelectorAll("details.friends-accordion").forEach(section => {
+      section.addEventListener("toggle", () => {
+        section.classList.toggle("is-open", section.open);
+        if (!section.open) return;
+        container.querySelectorAll("details.friends-accordion").forEach(item => {
+          if (item !== section) {
+            item.open = false;
+            item.classList.remove("is-open");
+          }
+        });
+      });
+    });
+  }
+
   async function renderFriendsPanel(container) {
     if (!container) return;
     try {
       const data = await loadFriendsData();
       container.innerHTML = `
-        <section class="friends-section">
-          <h4>Solicitudes recibidas ${data.incoming.length ? `<span>${data.incoming.length}</span>` : ""}</h4>
-          <div class="friends-list">${data.incoming.length ? data.incoming.map(x => renderFriendRow(x, "incoming")).join("") : renderFriendEmpty("No tienes solicitudes pendientes.")}</div>
-        </section>
-        <section class="friends-section">
-          <h4>Mis amigos</h4>
-          <div class="friends-list">${data.friends.length ? data.friends.map(x => renderFriendRow(x, "friend")).join("") : renderFriendEmpty("Todavía no tienes amigos agregados.")}</div>
-        </section>
-        <section class="friends-section">
-          <h4>Solicitudes enviadas</h4>
-          <div class="friends-list">${data.outgoing.length ? data.outgoing.map(x => renderFriendRow(x, "outgoing")).join("") : renderFriendEmpty("No tienes solicitudes enviadas.")}</div>
-        </section>`;
+        ${renderFriendsAccordionSection({ id: "incoming", title: "Solicitudes recibidas", count: data.incoming.length, rows: data.incoming, kind: "incoming", empty: "No tienes solicitudes pendientes.", open: false })}
+        ${renderFriendsAccordionSection({ id: "friends", title: "Mis amigos", count: data.friends.length, rows: data.friends, kind: "friend", empty: "Todavía no tienes amigos agregados.", open: false })}
+        ${renderFriendsAccordionSection({ id: "outgoing", title: "Solicitudes enviadas", count: data.outgoing.length, rows: data.outgoing, kind: "outgoing", empty: "No tienes solicitudes enviadas.", open: false })}`;
       refreshFriendBadge(data.incoming.length);
+      bindFriendsAccordions(container);
       if (window.bindPublicProfileTriggers) window.bindPublicProfileTriggers(container);
     } catch (error) {
       container.innerHTML = renderFriendEmpty(error.message || "No se pudieron cargar tus amigos.");
